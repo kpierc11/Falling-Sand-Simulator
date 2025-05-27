@@ -3,6 +3,9 @@
 #include <vector>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <thread>
+#include <chrono>
+#include <random>
 
 
 Uint64 currentFrameTime = SDL_GetTicks();
@@ -10,6 +13,14 @@ Uint64 previousFrameTime = currentFrameTime;
 
 bool mouseDown = false;
 bool mouseUp = true;
+
+constexpr float CELLSIZE = 5;
+constexpr float SCREENWIDTH = 1500;
+constexpr float SCREENHEIGHT = 600;
+constexpr int ROWS = SCREENHEIGHT / CELLSIZE;
+constexpr int COLUMNS = SCREENWIDTH / CELLSIZE;
+
+int grid[ROWS][COLUMNS] = {};
 
 
 static void checkCollision(std::vector<SDL_FRect>* vector, SDL_FRect currentSquare)
@@ -19,23 +30,24 @@ static void checkCollision(std::vector<SDL_FRect>* vector, SDL_FRect currentSqua
 
 int main(int argc, char* argv[])
 {
-	SDL_Window* window;                    // Declare a pointer
+	SDL_Window* window;
 	bool done = false;
 	SDL_Renderer* renderer;
 
-	SDL_Init(SDL_INIT_VIDEO);              // Initialize SDL3
+	// Initialize SDL3
+	SDL_Init(SDL_INIT_VIDEO);
 
 	// Create an application window with the following settings:
 	window = SDL_CreateWindow(
-		"An SDL3 window",                  // window title
-		1500,                               // width, in pixels
-		600,                               // height, in pixels
-		SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE           // flags - see below
+		"An SDL3 window",
+		SCREENWIDTH,
+		SCREENHEIGHT,
+		SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
 	);
 
 	// Check that the window was successfully created
 	if (window == NULL) {
-		// In the case that the window could not be made...
+
 		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Could not create window: %s\n", SDL_GetError());
 		return 1;
 	}
@@ -47,7 +59,6 @@ int main(int argc, char* argv[])
 
 	// Check that the window was successfully created
 	if (renderer == NULL) {
-		// In the case that the window could not be made...
 		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Could not create renderer: %s\n", SDL_GetError());
 		return 1;
 	}
@@ -56,15 +67,14 @@ int main(int argc, char* argv[])
 	std::vector<SDL_FRect> rects;
 
 
-	/*for (int i = 0; i < 100; i++)
-	{
-		SDL_FRect rect;
-		rect.h = 20;
-		rect.w = 20;
-		rect.x = 50;
-		rect.y = 50;
-		rects.push_back(rect);
-	}*/
+	//Create default grid
+	for (int i = 0; i < ROWS; i++) {
+		for (int j = 0; j < COLUMNS; j++) {
+			grid[i][j] = 0;
+		}
+	}
+
+	grid[20][0] = 1;
 
 	while (!done) {
 		SDL_Event event;
@@ -79,6 +89,13 @@ int main(int argc, char* argv[])
 
 
 		//std::cout << timePassedBetweenFrame << std::endl;
+
+		// Seed the random number generator
+		std::random_device rd;
+		std::mt19937 gen(rd());
+
+		// Define the range
+		std::uniform_int_distribution<> distrib(1, 2);
 
 
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -101,60 +118,98 @@ int main(int argc, char* argv[])
 			{
 				mouseDown = false;
 			}
+			if (event.type == SDL_EVENT_WINDOW_RESIZED)
+			{
+				int* width{};
+				int* height{};
+				SDL_GetWindowSize(window, width, height);
+
+
+			}
 		}
 
 
 
 		if (mouseDown)
 		{
-			float currentX = 0.0f;
-			float currentY = 0.0f;
-			SDL_GetMouseState(&currentX, &currentY);
+			//Set grid values
 
-			//std::cout << currentX << currentY << std::endl;
+			float mouseX = 0.0f;
+			float mouseY = 0.0f;
+			SDL_GetMouseState(&mouseX, &mouseY);
+			std::cout << "MouseX:" << mouseX / CELLSIZE << std::endl;
+			std::cout << "MouseY:" << mouseY / CELLSIZE << std::endl;
 
-			SDL_FRect rect{};
-			rect.h = 15;
-			rect.w = 15;
-			rect.x = currentX;
-			rect.y = currentY;
 
-			rects.push_back(rect);
+
+			grid[static_cast<int>(mouseY / CELLSIZE)][static_cast<int>(mouseX / CELLSIZE)] = 1;
+			grid[static_cast<int>((mouseY / CELLSIZE))][static_cast<int>((mouseX / CELLSIZE) + 1)] = 1;
+			grid[static_cast<int>((mouseY / CELLSIZE))][static_cast<int>((mouseX / CELLSIZE) - 1)] = 1;
+			grid[static_cast<int>((mouseY / CELLSIZE) + 1)][static_cast<int>((mouseX / CELLSIZE))] = 1;
+
 		}
 
+		float mouseX = 0.0f;
+		float mouseY = 0.0f;
+		SDL_GetMouseState(&mouseX, &mouseY);
+
+		SDL_FRect rect{};
+		rect.h = CELLSIZE;
+		rect.w = CELLSIZE;
+		rect.x = mouseX;
+		rect.y = mouseY;
+		SDL_SetRenderDrawColor(renderer, 205, 92, 92, 255);
+		SDL_RenderFillRect(renderer, &rect);
+
+		for (int i = 0; i < ROWS; i++) {
+			for (int j = 0; j < COLUMNS; j++) {
+
+				
+
+				////Grid layout with blank rects
+				//SDL_FRect rect{};
+				//rect.h = CELLSIZE;
+				//rect.w = CELLSIZE;
+				//rect.x = j * CELLSIZE;
+				//rect.y = i * CELLSIZE;
+
+				//SDL_SetRenderDrawColor(renderer, 46, 134, 193, 255);
+				//SDL_RenderRect(renderer, &rect);
+
+				//Render each cell that should have a sand particle. 
+				if (grid[i][j] == 1)
+				{
+					SDL_FRect rect{};
+					rect.h = CELLSIZE;
+					rect.w = CELLSIZE;
+					rect.x = j * CELLSIZE;
+					rect.y = i * CELLSIZE;
+
+					if (grid[i + 1][j] == 0)
+					{
+						grid[i + 1][j] = 1;
+						grid[i][j] = 0;
+					}
 
 
 
-		for (int i = 0; i < rects.size(); i++)
-		{
+					SDL_SetRenderDrawColor(renderer, 205, 92, 92, 255);
+					SDL_RenderFillRect(renderer, &rect);
 
-			float currentX = 0.0f;
-			float currentY = 0.0f;
-			SDL_GetMouseState(&currentX, &currentY);
-
-
-			//Check and make sure the sand doesn't go past the bottom of the screen
-			if (rects[i].y < 600 - rects[i].h)
-			{
-				rects[i].y + 20.0f;
-				rects[i].y += .5f;	
+				}
 			}
 
-
-			// Draw a green rectangle
-			SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-			SDL_RenderRect(renderer, &rects[i]);
 		}
+
+
+
 
 
 		// Show everything on screen
 		SDL_RenderPresent(renderer);
 
-
-		/*SDL_RenderRect(renderer, &rect);
-		rect.x += 1.0f;*/
-
 	}
+
 
 	// Close and destroy the window
 	SDL_DestroyWindow(window);
