@@ -14,19 +14,13 @@ Uint64 previousFrameTime = currentFrameTime;
 bool mouseDown = false;
 bool mouseUp = true;
 
-constexpr float CELLSIZE = 4;
+constexpr float CELLSIZE = 10;
 constexpr float SCREENWIDTH = 600;
 constexpr float SCREENHEIGHT = 600;
 constexpr int ROWS = SCREENHEIGHT / CELLSIZE;
 constexpr int COLUMNS = SCREENWIDTH / CELLSIZE;
 
 int grid[ROWS][COLUMNS] = {};
-
-
-static void checkCollision(std::vector<SDL_FRect>* vector, SDL_FRect currentSquare)
-{
-
-};
 
 int main(int argc, char* argv[])
 {
@@ -54,9 +48,6 @@ int main(int argc, char* argv[])
 
 	renderer = SDL_CreateRenderer(window, NULL);
 
-
-
-
 	// Check that the window was successfully created
 	if (renderer == NULL) {
 		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Could not create renderer: %s\n", SDL_GetError());
@@ -77,16 +68,12 @@ int main(int argc, char* argv[])
 	while (!done) {
 		SDL_Event event;
 
-		currentFrameTime = SDL_GetTicks();
+	/*	currentFrameTime = SDL_GetTicks();
 
 		double deltaTime = static_cast<double>(currentFrameTime - previousFrameTime) / SDL_GetPerformanceFrequency();
 
-		previousFrameTime = currentFrameTime;
+		previousFrameTime = currentFrameTime;*/
 
-		//std::cout << "Delta time (ms): " << deltaTime * 1000.0 << std::endl;
-
-
-		//std::cout << timePassedBetweenFrame << std::endl;
 
 		// Seed the random number generator
 		std::random_device rd;
@@ -128,17 +115,14 @@ int main(int argc, char* argv[])
 			}
 		}
 
-
-
+		//Set the grid value where the mouse is clicked to 1. 
 		if (mouseDown)
 		{
 			//Set grid values
-
 			float mouseX = 0.0f;
 			float mouseY = 0.0f;
 			SDL_GetMouseState(&mouseX, &mouseY);
-			//std::cout << "MouseX:" << mouseX / CELLSIZE << std::endl;
-			//std::cout << "MouseY:" << mouseY / CELLSIZE << std::endl;
+		
 
 			int mouseGridPos = grid[static_cast<int>(mouseY / CELLSIZE)][static_cast<int>(mouseX / CELLSIZE)];
 
@@ -149,18 +133,19 @@ int main(int argc, char* argv[])
 
 		}
 
+		//Render inital grid
 		for (int i = 0; i < ROWS; i++) {
 			for (int j = 0; j < COLUMNS; j++) {
 
 				//Grid layout with blank rects
-				/*SDL_FRect rect{};
+				SDL_FRect rect{};
 				rect.h = CELLSIZE;
 				rect.w = CELLSIZE;
 				rect.x = j * CELLSIZE;
 				rect.y = i * CELLSIZE;
 
 				SDL_SetRenderDrawColor(renderer, 46, 134, 193, 255);
-				SDL_RenderRect(renderer, &rect);*/
+				SDL_RenderRect(renderer, &rect);
 
 
 				//Render each cell that should have a sand particle. 
@@ -192,6 +177,7 @@ int main(int argc, char* argv[])
 		}
 
 
+		//Activate gravity on cells that have a 1 value. 
 		for (int i = ROWS - 1; i > 0; i--) {
 			for (int j = COLUMNS - 1; j > 0; j--) {
 
@@ -223,7 +209,6 @@ int main(int argc, char* argv[])
 
 						}
 
-
 					}
 
 				}
@@ -231,12 +216,10 @@ int main(int argc, char* argv[])
 
 		}
 
-
 		// Show everything on screen
 		SDL_RenderPresent(renderer);
 
 	}
-
 
 	// Close and destroy the window
 	SDL_DestroyWindow(window);
@@ -244,13 +227,4 @@ int main(int argc, char* argv[])
 	// Clean up
 	SDL_Quit();
 	return 0;
-}
-
-
-
-
-void checkCollision() {
-
-
-
 }
