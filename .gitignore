@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+#track the SDL lib folder
+!Dependencies/SDL3-3.2.14/lib/
+!Dependencies/SDL3-3.2.14/lib/**
