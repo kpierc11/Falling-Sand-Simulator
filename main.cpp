@@ -14,7 +14,7 @@ Uint64 previousFrameTime = currentFrameTime;
 bool mouseDown = false;
 bool mouseUp = true;
 
-constexpr float CELLSIZE = 10;
+constexpr float CELLSIZE = 4;
 constexpr float SCREENWIDTH = 600;
 constexpr float SCREENHEIGHT = 600;
 constexpr int ROWS = SCREENHEIGHT / CELLSIZE;
@@ -138,14 +138,14 @@ int main(int argc, char* argv[])
 			for (int j = 0; j < COLUMNS; j++) {
 
 				//Grid layout with blank rects
-				SDL_FRect rect{};
+				/*SDL_FRect rect{};
 				rect.h = CELLSIZE;
 				rect.w = CELLSIZE;
 				rect.x = j * CELLSIZE;
 				rect.y = i * CELLSIZE;
 
 				SDL_SetRenderDrawColor(renderer, 46, 134, 193, 255);
-				SDL_RenderRect(renderer, &rect);
+				SDL_RenderRect(renderer, &rect);*/
 
 
 				//Render each cell that should have a sand particle. 
