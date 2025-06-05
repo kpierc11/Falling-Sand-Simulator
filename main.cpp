@@ -14,8 +14,8 @@ Uint64 previousFrameTime = currentFrameTime;
 bool mouseDown = false;
 bool mouseUp = true;
 
-constexpr float CELLSIZE = 5;
-constexpr float SCREENWIDTH = 1500;
+constexpr float CELLSIZE = 4;
+constexpr float SCREENWIDTH = 600;
 constexpr float SCREENHEIGHT = 600;
 constexpr int ROWS = SCREENHEIGHT / CELLSIZE;
 constexpr int COLUMNS = SCREENWIDTH / CELLSIZE;
@@ -74,8 +74,6 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	grid[20][0] = 1;
-
 	while (!done) {
 		SDL_Event event;
 
@@ -96,6 +94,8 @@ int main(int argc, char* argv[])
 
 		// Define the range
 		std::uniform_int_distribution<> distrib(1, 2);
+
+		int randomNum = distrib(gen);
 
 
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -137,63 +137,53 @@ int main(int argc, char* argv[])
 			float mouseX = 0.0f;
 			float mouseY = 0.0f;
 			SDL_GetMouseState(&mouseX, &mouseY);
-			std::cout << "MouseX:" << mouseX / CELLSIZE << std::endl;
-			std::cout << "MouseY:" << mouseY / CELLSIZE << std::endl;
+			//std::cout << "MouseX:" << mouseX / CELLSIZE << std::endl;
+			//std::cout << "MouseY:" << mouseY / CELLSIZE << std::endl;
 
+			int mouseGridPos = grid[static_cast<int>(mouseY / CELLSIZE)][static_cast<int>(mouseX / CELLSIZE)];
 
-
-			grid[static_cast<int>(mouseY / CELLSIZE)][static_cast<int>(mouseX / CELLSIZE)] = 1;
-			grid[static_cast<int>((mouseY / CELLSIZE))][static_cast<int>((mouseX / CELLSIZE) + 1)] = 1;
-			grid[static_cast<int>((mouseY / CELLSIZE))][static_cast<int>((mouseX / CELLSIZE) - 1)] = 1;
-			grid[static_cast<int>((mouseY / CELLSIZE) + 1)][static_cast<int>((mouseX / CELLSIZE))] = 1;
+			if (mouseGridPos == 0)
+			{
+				grid[static_cast<int>(mouseY / CELLSIZE)][static_cast<int>(mouseX / CELLSIZE)] = randomNum;
+			}
 
 		}
-
-		float mouseX = 0.0f;
-		float mouseY = 0.0f;
-		SDL_GetMouseState(&mouseX, &mouseY);
-
-		SDL_FRect rect{};
-		rect.h = CELLSIZE;
-		rect.w = CELLSIZE;
-		rect.x = mouseX;
-		rect.y = mouseY;
-		SDL_SetRenderDrawColor(renderer, 205, 92, 92, 255);
-		SDL_RenderFillRect(renderer, &rect);
 
 		for (int i = 0; i < ROWS; i++) {
 			for (int j = 0; j < COLUMNS; j++) {
 
-				
+				//Grid layout with blank rects
+				/*SDL_FRect rect{};
+				rect.h = CELLSIZE;
+				rect.w = CELLSIZE;
+				rect.x = j * CELLSIZE;
+				rect.y = i * CELLSIZE;
 
-				////Grid layout with blank rects
-				//SDL_FRect rect{};
-				//rect.h = CELLSIZE;
-				//rect.w = CELLSIZE;
-				//rect.x = j * CELLSIZE;
-				//rect.y = i * CELLSIZE;
+				SDL_SetRenderDrawColor(renderer, 46, 134, 193, 255);
+				SDL_RenderRect(renderer, &rect);*/
 
-				//SDL_SetRenderDrawColor(renderer, 46, 134, 193, 255);
-				//SDL_RenderRect(renderer, &rect);
 
 				//Render each cell that should have a sand particle. 
-				if (grid[i][j] == 1)
+				if (grid[i][j] > 0)
 				{
+
 					SDL_FRect rect{};
 					rect.h = CELLSIZE;
 					rect.w = CELLSIZE;
 					rect.x = j * CELLSIZE;
 					rect.y = i * CELLSIZE;
 
-					if (grid[i + 1][j] == 0)
+
+					if (grid[i][j] == 1)
 					{
-						grid[i + 1][j] = 1;
-						grid[i][j] = 0;
+						SDL_SetRenderDrawColor(renderer, 194, 178, 128, 255);
 					}
 
+					if (grid[i][j] == 2)
+					{
+						SDL_SetRenderDrawColor(renderer, 240, 230, 140, 255);
+					}
 
-
-					SDL_SetRenderDrawColor(renderer, 205, 92, 92, 255);
 					SDL_RenderFillRect(renderer, &rect);
 
 				}
@@ -202,7 +192,44 @@ int main(int argc, char* argv[])
 		}
 
 
+		for (int i = ROWS - 1; i > 0; i--) {
+			for (int j = COLUMNS - 1; j > 0; j--) {
 
+				//Have each sand particle move to the cell below to simulate gravity.  
+				if (grid[i][j] > 0 && i + 1 != COLUMNS)
+				{
+					if (grid[i + 1][j] == 0 && i + 1 < COLUMNS)
+					{
+						grid[i][j] = grid[i + 1][j];
+						grid[i + 1][j] = randomNum;
+					}
+
+					if (grid[i + 1][j] > 0)
+					{
+						//shift left
+						if (randomNum == 1)
+						{
+							int temp = grid[i][j]; 
+							grid[i][j] = grid[i][j - 1];
+							grid[i][j - 1] = temp;
+						}
+
+						//shift right
+						if (randomNum == 2)
+						{
+							int temp = grid[i][j];
+							grid[i][j] = grid[i][j + 1];
+							grid[i][j + 1] = temp;
+
+						}
+
+
+					}
+
+				}
+			}
+
+		}
 
 
 		// Show everything on screen
