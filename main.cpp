@@ -200,26 +200,26 @@ int main(int argc, char* argv[])
 				{
 					if (grid[i + 1][j] == 0 && i + 1 < COLUMNS)
 					{
+						int temp = grid[i][j];
 						grid[i][j] = grid[i + 1][j];
-						grid[i + 1][j] = randomNum;
+						grid[i + 1][j] = temp;
 					}
-
-					if (grid[i + 1][j] > 0)
+					else if (grid[i + 1][j] > 0)
 					{
 						//shift left
-						if (randomNum == 1)
+						if (randomNum == 1 && grid[i + 1][j - 1] == 0)
 						{
 							int temp = grid[i][j]; 
-							grid[i][j] = grid[i][j - 1];
-							grid[i][j - 1] = temp;
+							grid[i][j] = grid[i + 1][j - 1];
+							grid[i +1][j - 1] = temp;
 						}
 
 						//shift right
-						if (randomNum == 2)
+						if (randomNum == 2 && grid[i + 1][j + 1] == 0)
 						{
 							int temp = grid[i][j];
-							grid[i][j] = grid[i][j + 1];
-							grid[i][j + 1] = temp;
+							grid[i][j] = grid[i + 1][j + 1];
+							grid[i + 1][j + 1] = temp;
 
 						}
 
