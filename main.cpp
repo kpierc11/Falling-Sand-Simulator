@@ -68,14 +68,14 @@ int main(int argc, char* argv[])
 	while (!done) {
 		SDL_Event event;
 
-	/*	currentFrameTime = SDL_GetTicks();
+		/*	currentFrameTime = SDL_GetTicks();
 
-		double deltaTime = static_cast<double>(currentFrameTime - previousFrameTime) / SDL_GetPerformanceFrequency();
+			double deltaTime = static_cast<double>(currentFrameTime - previousFrameTime) / SDL_GetPerformanceFrequency();
 
-		previousFrameTime = currentFrameTime;*/
+			previousFrameTime = currentFrameTime;*/
 
 
-		// Seed the random number generator
+			// Seed the random number generator
 		std::random_device rd;
 		std::mt19937 gen(rd());
 
@@ -122,13 +122,18 @@ int main(int argc, char* argv[])
 			float mouseX = 0.0f;
 			float mouseY = 0.0f;
 			SDL_GetMouseState(&mouseX, &mouseY);
-		
 
-			int mouseGridPos = grid[static_cast<int>(mouseY / CELLSIZE)][static_cast<int>(mouseX / CELLSIZE)];
+			int gridY = static_cast<int>(mouseY / CELLSIZE);
+			int gridX = static_cast<int>(mouseX / CELLSIZE);
 
-			if (mouseGridPos == 0)
+			if (gridY > 0 && gridX < COLUMNS && gridX > 0)
 			{
-				grid[static_cast<int>(mouseY / CELLSIZE)][static_cast<int>(mouseX / CELLSIZE)] = randomNum;
+				int mouseGridPos = grid[gridY][gridX];
+
+				if (mouseGridPos == 0)
+				{
+					grid[static_cast<int>(mouseY / CELLSIZE)][static_cast<int>(mouseX / CELLSIZE)] = randomNum;
+				}
 			}
 
 		}
@@ -195,9 +200,9 @@ int main(int argc, char* argv[])
 						//shift left
 						if (randomNum == 1 && grid[i + 1][j - 1] == 0)
 						{
-							int temp = grid[i][j]; 
+							int temp = grid[i][j];
 							grid[i][j] = grid[i + 1][j - 1];
-							grid[i +1][j - 1] = temp;
+							grid[i + 1][j - 1] = temp;
 						}
 
 						//shift right
