@@ -14,7 +14,7 @@ Uint64 previousFrameTime = currentFrameTime;
 bool mouseDown = false;
 bool mouseUp = true;
 
-constexpr float CELLSIZE = 4;
+constexpr float CELLSIZE = 6;
 constexpr float SCREENWIDTH = 600;
 constexpr float SCREENHEIGHT = 600;
 constexpr int ROWS = SCREENHEIGHT / CELLSIZE;
