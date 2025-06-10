@@ -29,8 +29,10 @@ public:
 	std::vector<SandParticle>mGrid;
 
 	bool InitSandGrid();
+	void SimulationLoop();
 	void DrawGrid();
 	void UpdateGrid();
+	void HandleInput();
 	void ShiftParticleDown(int index);
 	void ShiftParticleLeftOrRight(int index);
 	void ShiftWaterParticle(int index);
@@ -63,6 +65,7 @@ private:
 	bool mDone = false;
 	SDL_Renderer* mRenderer;
 	int mRandomNum;
+	bool mMouseDown;
 
 };
 

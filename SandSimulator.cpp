@@ -148,6 +148,31 @@ bool SandSimulator::InitSandGrid()
 	}
 }
 
+void SandSimulator::SimulationLoop()
+{
+
+	while(!mDone)
+	{
+		//Set initial draw color
+		SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
+
+		//Clear back buffer
+		SDL_RenderClear(mRenderer);
+
+		SDL_SetRenderDrawColor(mRenderer, 0, 0, 255, 255);
+
+
+		HandleInput();
+		DrawGrid();
+		UpdateGrid();
+
+		// Show everything on screen
+		SDL_RenderPresent(GetRenderer());
+	}
+
+
+}
+
 void SandSimulator::DrawGrid()
 {
 	// Seed the random number generator
@@ -197,6 +222,50 @@ void SandSimulator::UpdateGrid()
 
 	}
 
+}
+
+void SandSimulator::HandleInput()
+{
+
+	SDL_Event event;
+
+	while (SDL_PollEvent(&event)) {
+		if (event.type == SDL_EVENT_QUIT) {
+			mDone = true;
+		}
+
+		if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+		{
+			mMouseDown = true;
+		}
+		if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
+		{
+			mMouseDown = false;
+		}
+	}
+
+	//Set the grid value where the mouse is clicked to 1. 
+	if (mMouseDown)
+	{
+		//Set grid values
+		float mouseX = 0.0f;
+		float mouseY = 0.0f;
+		SDL_GetMouseState(&mouseX, &mouseY);
+
+		int gridY = static_cast<int>(mouseY / GetSandSize());
+		int gridX = static_cast<int>(mouseX / GetSandSize());
+
+		for (auto& sandParticle : mGrid)
+		{
+
+			if (sandParticle.rect.x / GetSandSize() == gridX && sandParticle.rect.y / GetSandSize() == gridY && !sandParticle.isShowing)
+			{
+				sandParticle.isShowing = 1;
+			}
+
+		}
+
+	}
 }
 
 void SandSimulator::ShiftParticleDown(int index)
