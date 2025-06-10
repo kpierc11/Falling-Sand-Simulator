@@ -14,6 +14,7 @@ struct SandParticle
 	Uint8 b;
 	Uint8 a;
 	bool isShowing;
+	bool isWater;
 };
 
 
@@ -30,6 +31,8 @@ public:
 	bool InitSandGrid();
 	void DrawGrid();
 	void UpdateGrid();
+	void ShiftParticleDown(int index);
+	void ShiftParticleLeftOrRight(int index);
 
 	SDL_Renderer* GetRenderer() {
 		return mRenderer;

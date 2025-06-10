@@ -2,8 +2,7 @@
 
 SandSimulator::SandSimulator()
 {
-
-	mSandSize = 6;
+	mSandSize = 4;
 	mScreenWidth = 1000;
 	mScreenHeight = 1000;
 	mRows = mScreenHeight / mSandSize;
@@ -24,6 +23,7 @@ SandSimulator::SandSimulator()
 
 			int randomNum = distrib(gen);
 
+
 			SandParticle particle;
 			particle.rect.h = mSandSize;
 			particle.rect.w = mSandSize;
@@ -31,37 +31,68 @@ SandSimulator::SandSimulator()
 			particle.rect.y = i * mSandSize;
 
 
-
-			if (randomNum == 1)
+			if (i <= 100)
 			{
-				particle.r = 125;
-				particle.g = 102;
-				particle.b = 8;
-				particle.a = 255;
+				particle.isWater = true;
+			}
+			else
+			{
+				particle.isWater = false;
 			}
 
-			if (randomNum == 2)
-			{
-				particle.r = 154;
-				particle.g = 125;
-				particle.b = 10;
-				particle.a = 255;
-			}
+			if (particle.isWater == true) {
 
-			if (randomNum == 3)
-			{
-				particle.r = 183;
-				particle.g = 149;
-				particle.b = 11;
-				particle.a = 255;
-			}
+				if (randomNum == 1)
+				{
+					particle.r = 26;
+					particle.g = 82;
+					particle.b = 118;
+					particle.a = 255;
+				}
 
-			if (randomNum == 4)
-			{
-				particle.r = 212;
-				particle.g = 172;
-				particle.b = 13;
-				particle.a = 255;
+				if (randomNum == 2)
+				{
+					particle.r = 31;
+					particle.g = 97;
+					particle.b = 141;
+					particle.a = 255;
+				}
+			}
+			else {
+
+				if (randomNum == 1)
+				{
+					particle.r = 125;
+					particle.g = 102;
+					particle.b = 8;
+					particle.a = 255;
+				}
+
+				if (randomNum == 2)
+				{
+					particle.r = 154;
+					particle.g = 125;
+					particle.b = 10;
+					particle.a = 255;
+				}
+
+				if (randomNum == 3)
+				{
+					particle.r = 183;
+					particle.g = 149;
+					particle.b = 11;
+					particle.a = 255;
+				}
+
+				if (randomNum == 4)
+				{
+					particle.r = 212;
+					particle.g = 172;
+					particle.b = 13;
+					particle.a = 255;
+				}
+
+
 			}
 
 			particle.isShowing = 0;
@@ -130,9 +161,9 @@ void SandSimulator::DrawGrid()
 			SDL_RenderFillRect(mRenderer, &sandParticle->rect);
 		}
 
-
 	}
 }
+
 
 void SandSimulator::UpdateGrid()
 {
@@ -143,28 +174,42 @@ void SandSimulator::UpdateGrid()
 		{
 			if (mGrid[i + mRows].isShowing == 0)
 			{
-				mGrid[i].isShowing = 0;
-				mGrid[i + mRows].isShowing = 1;
-
+				ShiftParticleDown(i);
 			}
 			else if (mGrid[i + mRows].isShowing)
 			{
-				//shift left
-				if (mRandomNum == 1 && mGrid[(i + mRows) - 1].isShowing == 0)
-				{
-					mGrid[i].isShowing = 0;
-					mGrid[i + mRows - 1].isShowing = 1;
-				}
-
-				//shift right
-				if (mRandomNum == 2 && mGrid[(i + mRows) + 1].isShowing == 0)
-				{
-					mGrid[i].isShowing = 0;
-					mGrid[i + mRows + 1].isShowing = 1;
-				}
+				ShiftParticleLeftOrRight(i);
 			}
+
 		}
 
 	}
 
+}
+
+void SandSimulator::ShiftParticleDown(int index)
+{
+	if (mGrid[index + mRows].isShowing == 0)
+	{
+		mGrid[index].isShowing = 0;
+		mGrid[index + mRows].isShowing = 1;
+
+	}
+}
+
+void SandSimulator::ShiftParticleLeftOrRight(int index)
+{
+	//shift left
+	if (mRandomNum == 1 && mGrid[(index + mRows) - 1].isShowing == 0)
+	{
+		mGrid[index].isShowing = 0;
+		mGrid[index + mRows - 1].isShowing = 1;
+	}
+
+	//shift right
+	if (mRandomNum == 2 && mGrid[(index + mRows) + 1].isShowing == 0)
+	{
+		mGrid[index].isShowing = 0;
+		mGrid[index + mRows + 1].isShowing = 1;
+	}
 }
