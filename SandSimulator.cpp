@@ -10,6 +10,8 @@ SandSimulator::SandSimulator()
 	mWindow = NULL;
 	mRenderer = NULL;
 	mRandomNum = 0;
+	mDone = false;
+	mMouseDown = false;
 
 	for (int i = 0; i < mRows; i++) {
 		for (int j = 0; j < mColumns; j++) {
