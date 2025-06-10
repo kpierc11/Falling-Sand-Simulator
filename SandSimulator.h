@@ -33,6 +33,7 @@ public:
 	void UpdateGrid();
 	void ShiftParticleDown(int index);
 	void ShiftParticleLeftOrRight(int index);
+	void ShiftWaterParticle(int index);
 
 	SDL_Renderer* GetRenderer() {
 		return mRenderer;

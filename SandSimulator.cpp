@@ -2,15 +2,14 @@
 
 SandSimulator::SandSimulator()
 {
-	mSandSize = 4;
-	mScreenWidth = 1000;
+	mSandSize = 6;
+	mScreenWidth = 1280;
 	mScreenHeight = 1000;
 	mRows = mScreenHeight / mSandSize;
 	mColumns = mScreenWidth / mSandSize;
 	mWindow = NULL;
 	mRenderer = NULL;
 	mRandomNum = 0;
-
 
 	for (int i = 0; i < mRows; i++) {
 		for (int j = 0; j < mColumns; j++) {
@@ -30,69 +29,78 @@ SandSimulator::SandSimulator()
 			particle.rect.x = j * mSandSize;
 			particle.rect.y = i * mSandSize;
 
+			// Mark index 200 as water
+			if (i > mRows - 100)
+			{
+				particle.isWater = 1;
 
-			if (i <= 100)
-			{
-				particle.isWater = true;
-			}
-			else
-			{
-				particle.isWater = false;
 			}
 
-			if (particle.isWater == true) {
-
-				if (randomNum == 1)
+			// Color water particles
+			if (particle.isWater == 1)
+			{
+				particle.r = 26;
+				particle.g = 67;
+				particle.b = 96;
+				particle.a = 255;
+				switch (randomNum)
 				{
+					case 1:
 					particle.r = 26;
-					particle.g = 82;
-					particle.b = 118;
+					particle.g = 67;
+					particle.b = 96;
 					particle.a = 255;
+					break;
+					case 2:
+					particle.r = 41;
+					particle.g = 128;
+					particle.b = 185;
+					particle.a = 255;
+					break;
+					case 3:
+					particle.r = 41;
+					particle.g = 128;
+					particle.b = 185;
+					particle.a = 255;
+					break;
+					case 4:
+					particle.r = 26;
+					particle.g = 67;
+					particle.b = 96;
+					particle.a = 255;
+					break;
 				}
 
-				if (randomNum == 2)
-				{
-					particle.r = 31;
-					particle.g = 97;
-					particle.b = 141;
-					particle.a = 255;
-				}
 			}
 			else {
-
-				if (randomNum == 1)
+				switch (randomNum)
 				{
+					case 1:
 					particle.r = 125;
 					particle.g = 102;
 					particle.b = 8;
 					particle.a = 255;
-				}
-
-				if (randomNum == 2)
-				{
+					break;
+					case 2:
 					particle.r = 154;
 					particle.g = 125;
 					particle.b = 10;
 					particle.a = 255;
-				}
-
-				if (randomNum == 3)
-				{
+					break;
+					case 3:
 					particle.r = 183;
 					particle.g = 149;
 					particle.b = 11;
 					particle.a = 255;
-				}
-
-				if (randomNum == 4)
-				{
+					break;
+					case 4:
 					particle.r = 212;
 					particle.g = 172;
 					particle.b = 13;
 					particle.a = 255;
+					break;
 				}
-
-
+			
 			}
 
 			particle.isShowing = 0;
@@ -154,13 +162,12 @@ void SandSimulator::DrawGrid()
 	//Render Grid 
 	for (auto sandParticle = mGrid.begin(); sandParticle != mGrid.end(); ++sandParticle)
 	{
-		if (sandParticle->isShowing && sandParticle != mGrid.end())
+		if (sandParticle->isShowing)
 		{
-
+			// Render the particle
 			SDL_SetRenderDrawColor(mRenderer, sandParticle->r, sandParticle->g, sandParticle->b, sandParticle->a);
 			SDL_RenderFillRect(mRenderer, &sandParticle->rect);
 		}
-
 	}
 }
 
@@ -170,15 +177,20 @@ void SandSimulator::UpdateGrid()
 
 	for (int i = mColumns * mRows - 1; i > 0; i--)
 	{
-		if (mGrid[i].isShowing && i + mRows < mColumns * mRows - 1)
+		if (mGrid[i].isShowing && i + mColumns < mColumns * mRows - 1)
 		{
-			if (mGrid[i + mRows].isShowing == 0)
+			if (mGrid[i + mColumns].isShowing == 0)
 			{
 				ShiftParticleDown(i);
 			}
-			else if (mGrid[i + mRows].isShowing)
+			else if (mGrid[i + mColumns].isShowing)
 			{
 				ShiftParticleLeftOrRight(i);
+			}
+			
+			if(mGrid[i].isWater == 1)
+			{
+				ShiftWaterParticle(i);
 			}
 
 		}
@@ -189,27 +201,37 @@ void SandSimulator::UpdateGrid()
 
 void SandSimulator::ShiftParticleDown(int index)
 {
-	if (mGrid[index + mRows].isShowing == 0)
+	if (mGrid[index + mColumns].isShowing == 0)
 	{
 		mGrid[index].isShowing = 0;
-		mGrid[index + mRows].isShowing = 1;
-
+		mGrid[index + mColumns].isShowing = 1;
 	}
 }
 
 void SandSimulator::ShiftParticleLeftOrRight(int index)
-{
+{	
 	//shift left
-	if (mRandomNum == 1 && mGrid[(index + mRows) - 1].isShowing == 0)
+	if (mRandomNum == 1 && mGrid[(index + mColumns) - 1].isShowing == 0)
 	{
 		mGrid[index].isShowing = 0;
-		mGrid[index + mRows - 1].isShowing = 1;
+		mGrid[index + mColumns - 1].isShowing = 1;
 	}
 
 	//shift right
-	if (mRandomNum == 2 && mGrid[(index + mRows) + 1].isShowing == 0)
+	if (mRandomNum == 2 && mGrid[(index + mColumns) + 1].isShowing == 0)
 	{
 		mGrid[index].isShowing = 0;
-		mGrid[index + mRows + 1].isShowing = 1;
+		mGrid[index + mColumns + 1].isShowing = 1;
 	}
+}
+
+
+void SandSimulator::ShiftWaterParticle(int index)
+{
+	//shift right and up and down
+	//if (mGrid[(index + mColumns) + 1].isShowing == 0)
+	//{
+
+
+	//}
 }
