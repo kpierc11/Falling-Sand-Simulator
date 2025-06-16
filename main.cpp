@@ -2,9 +2,6 @@
 #include <iostream>
 #include "SandSimulator.h"
 
-bool mouseDown = false;
-bool mouseUp = true;
-
 
 int main(int argc, char* argv[])
 {
@@ -19,6 +16,7 @@ int main(int argc, char* argv[])
 
 	// Close and destroy the window
 	SDL_DestroyWindow(sandSimulation.GetWindow());
+
 
 	// Clean up
 	SDL_Quit();

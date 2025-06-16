@@ -1,28 +1,25 @@
 #include "SandSimulator.h"
 
-SandSimulator::SandSimulator()
+SandSimulator::SandSimulator() :
+	mSandSize(6),
+	mScreenWidth(1280),
+	mScreenHeight(1000),
+	mRows(mScreenHeight / mSandSize),
+	mColumns(mScreenWidth / mSandSize),
+	mWindow(nullptr),
+	mRenderer(nullptr),
+	mRandomNum(0),
+	mDone(false),
+	mMouseDown(false),
+	mRng(std::mt19937(std::random_device{}())),
+	mDistrib(std::uniform_int_distribution<>(1, 4))
 {
-	mSandSize = 6;
-	mScreenWidth = 1280;
-	mScreenHeight = 1000;
-	mRows = mScreenHeight / mSandSize;
-	mColumns = mScreenWidth / mSandSize;
-	mWindow = NULL;
-	mRenderer = NULL;
-	mRandomNum = 0;
-	mDone = false;
-	mMouseDown = false;
 
 	for (int i = 0; i < mRows; i++) {
 		for (int j = 0; j < mColumns; j++) {
-			// Seed the random number generator
-			std::random_device rd;
-			std::mt19937 gen(rd());
 
-			// Define the range
-			std::uniform_int_distribution<> distrib(1, 4);
 
-			int randomNum = distrib(gen);
+			mRandomNum = mDistrib(mRng);
 
 
 			SandParticle particle;
@@ -45,7 +42,7 @@ SandSimulator::SandSimulator()
 				particle.g = 67;
 				particle.b = 96;
 				particle.a = 255;
-				switch (randomNum)
+				switch (mRandomNum)
 				{
 					case 1:
 					particle.r = 26;
@@ -75,7 +72,7 @@ SandSimulator::SandSimulator()
 
 			}
 			else {
-				switch (randomNum)
+				switch (mRandomNum)
 				{
 					case 1:
 					particle.r = 125;
@@ -102,7 +99,7 @@ SandSimulator::SandSimulator()
 					particle.a = 255;
 					break;
 				}
-			
+
 			}
 
 			particle.isShowing = 0;
@@ -128,7 +125,7 @@ bool SandSimulator::InitSandGrid()
 
 	// Create an application window with the following settings:
 	mWindow = SDL_CreateWindow(
-		"An SDL3 window",
+		"Sand Simulator",
 		mScreenWidth,
 		mScreenHeight,
 		SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
@@ -153,7 +150,7 @@ bool SandSimulator::InitSandGrid()
 void SandSimulator::SimulationLoop()
 {
 
-	while(!mDone)
+	while (!mDone)
 	{
 		//Set initial draw color
 		SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
@@ -177,14 +174,8 @@ void SandSimulator::SimulationLoop()
 
 void SandSimulator::DrawGrid()
 {
-	// Seed the random number generator
-	std::random_device rd;
-	std::mt19937 gen(rd());
 
-	// Define the range
-	std::uniform_int_distribution<> distrib(1, 4);
-
-	mRandomNum = distrib(gen);
+	mRandomNum = mDistrib(mRng);
 
 	//Render Grid 
 	for (auto sandParticle = mGrid.begin(); sandParticle != mGrid.end(); ++sandParticle)
@@ -214,8 +205,8 @@ void SandSimulator::UpdateGrid()
 			{
 				ShiftParticleLeftOrRight(i);
 			}
-			
-			if(mGrid[i].isWater == 1)
+
+			if (mGrid[i].isWater == 1)
 			{
 				ShiftWaterParticle(i);
 			}
@@ -280,7 +271,7 @@ void SandSimulator::ShiftParticleDown(int index)
 }
 
 void SandSimulator::ShiftParticleLeftOrRight(int index)
-{	
+{
 	//shift left
 	if (mRandomNum == 1 && mGrid[(index + mColumns) - 1].isShowing == 0)
 	{
@@ -302,7 +293,11 @@ void SandSimulator::ShiftWaterParticle(int index)
 	//shift right and up and down
 	//if (mGrid[(index + mColumns) + 1].isShowing == 0)
 	//{
+	/*mGrid[index].isShowing = 0;
+	mGrid[index + mColumns - 1].isShowing = 1;*/
 
+	/*mGrid[index].isShowing = 0;
+	mGrid[index + 1].isShowing = 1;*/
 
 	//}
 }

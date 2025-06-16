@@ -66,6 +66,8 @@ private:
 	SDL_Renderer* mRenderer;
 	int mRandomNum;
 	bool mMouseDown;
+	std::mt19937 mRng;
+	std::uniform_int_distribution<> mDistrib;
 
 };
 
