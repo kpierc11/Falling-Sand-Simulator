@@ -30,12 +30,6 @@ public:
 
 	bool InitSandGrid();
 	void SimulationLoop();
-	void DrawGrid();
-	void UpdateGrid();
-	void HandleInput();
-	void ShiftParticleDown(int index);
-	void ShiftParticleLeftOrRight(int index);
-	void ShiftWaterParticle(int index);
 
 	SDL_Renderer* GetRenderer() {
 		return mRenderer;
@@ -54,6 +48,15 @@ public:
 		return mSandSize;
 	}
 
+private:
+	void DrawGrid();
+	void RenderParticles();
+	void UpdateParticlePositions();
+	void HandleInput();
+	void ShiftParticleDown(int index);
+	void ShiftParticleLeftOrRight(int index);
+	void ShiftWaterParticle(int index);
+
 
 private:
 	float mSandSize;
@@ -68,6 +71,8 @@ private:
 	bool mMouseDown;
 	std::mt19937 mRng;
 	std::uniform_int_distribution<> mDistrib;
+	SDL_FRect mMouseArea;
+	int mMouseAreaSize; 
 
 };
 

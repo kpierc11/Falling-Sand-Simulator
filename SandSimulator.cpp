@@ -12,7 +12,9 @@ SandSimulator::SandSimulator() :
 	mDone(false),
 	mMouseDown(false),
 	mRng(std::mt19937(std::random_device{}())),
-	mDistrib(std::uniform_int_distribution<>(1, 4))
+	mDistrib(std::uniform_int_distribution<>(1, 4)),
+	mMouseArea({}),
+	mMouseAreaSize(20)
 {
 
 	for (int i = 0; i < mRows; i++) {
@@ -163,7 +165,6 @@ void SandSimulator::SimulationLoop()
 
 		HandleInput();
 		DrawGrid();
-		UpdateGrid();
 
 		// Show everything on screen
 		SDL_RenderPresent(GetRenderer());
@@ -175,6 +176,13 @@ void SandSimulator::SimulationLoop()
 void SandSimulator::DrawGrid()
 {
 
+	RenderParticles();
+	UpdateParticlePositions();
+
+}
+
+void SandSimulator::RenderParticles()
+{
 	mRandomNum = mDistrib(mRng);
 
 	//Render Grid 
@@ -187,12 +195,12 @@ void SandSimulator::DrawGrid()
 			SDL_RenderFillRect(mRenderer, &sandParticle->rect);
 		}
 	}
+
 }
 
 
-void SandSimulator::UpdateGrid()
+void SandSimulator::UpdateParticlePositions()
 {
-
 	for (int i = mColumns * mRows - 1; i > 0; i--)
 	{
 		if (mGrid[i].isShowing && i + mColumns < mColumns * mRows - 1)
@@ -235,6 +243,24 @@ void SandSimulator::HandleInput()
 		{
 			mMouseDown = false;
 		}
+		if (event.type == SDL_EVENT_MOUSE_WHEEL)
+		{
+
+			std::cout << "Mouse Scrolled bitch. " << std::endl;
+			std::cout << event.wheel.y << std::endl;
+			if (event.wheel.y == 1)
+			{
+
+				mMouseAreaSize -= 20;
+
+			}
+			else if (event.wheel.y == -1)
+			{
+
+				mMouseAreaSize += 20;
+			}
+
+		}
 	}
 
 	//Set the grid value where the mouse is clicked to 1. 
@@ -245,13 +271,30 @@ void SandSimulator::HandleInput()
 		float mouseY = 0.0f;
 		SDL_GetMouseState(&mouseX, &mouseY);
 
-		int gridY = static_cast<int>(mouseY / GetSandSize());
-		int gridX = static_cast<int>(mouseX / GetSandSize());
+		const int gridX = static_cast<int>(mouseX / GetSandSize());
+		const int gridY = static_cast<int>(mouseY / GetSandSize());
+
+		std::cout << "Mouse X: " << gridX << std::endl;
+		std::cout << "Mouse Y:" << gridY << std::endl;
+
+		mMouseArea.h = mMouseAreaSize;
+		mMouseArea.w = mMouseAreaSize;
+		mMouseArea.x = mouseX - (mMouseArea.h / 2);
+		mMouseArea.y = mouseY - (mMouseArea.w / 2);
+
+		std::cout << "Mouse Area X: " << mMouseArea.x << std::endl;
+		std::cout << "Mouse Area Y:" << mMouseArea.y << std::endl;
+
+		SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
+		SDL_RenderRect(mRenderer, &mMouseArea);
 
 		for (auto& sandParticle : mGrid)
 		{
 
-			if (sandParticle.rect.x / GetSandSize() == gridX && sandParticle.rect.y / GetSandSize() == gridY && !sandParticle.isShowing)
+			float particleX = sandParticle.rect.x / GetSandSize();
+			float particleY = sandParticle.rect.y / GetSandSize();
+
+			if (particleX == mMouseArea.x && particleY == mMouseArea.y && !sandParticle.isShowing)
 			{
 				sandParticle.isShowing = 1;
 			}
