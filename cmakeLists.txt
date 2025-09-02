@@ -1,0 +1,65 @@
+cmake_minimum_required(VERSION 3.30)
+project(FallingSandSimulator VERSION 1.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+include(FetchContent)
+
+# Dependency fetcher
+function(include_dependency libName gitURL gitTag)
+    FetchContent_Declare(${libName}
+        GIT_REPOSITORY ${gitURL}
+        GIT_TAG        ${gitTag}
+        GIT_SHALLOW    TRUE
+        GIT_PROGRESS   TRUE
+    )
+    FetchContent_MakeAvailable(${libName})
+endfunction()
+
+# SDL3 support
+find_package(SDL3 QUIET)
+if(NOT SDL3_FOUND)
+    message(STATUS "Fetching SDL3 from GitHub")
+    include_dependency(SDL3 https://github.com/libsdl-org/SDL.git release-3.2.18)
+else()
+    message(STATUS "Using locally installed SDL3")
+endif()
+
+# Add executable and source files
+add_executable(FallingSandSimulator)
+
+# Add main file and other traditional cpp sources (if any)
+target_sources(FallingSandSimulator
+    PRIVATE
+        src/main.cpp
+        src/SandSimulator.cpp
+)
+
+# Include path for any legacy headers
+target_include_directories(FallingSandSimulator PRIVATE ${PROJECT_SOURCE_DIR}/include)
+
+# Compiler warnings
+if (MSVC)
+    target_compile_options(FallingSandSimulator PRIVATE /W4 /permissive- /utf-8)
+else()
+    target_compile_options(FallingSandSimulator PRIVATE
+        -Wall -Wextra -Wpedantic
+        -Wconversion -Wsign-conversion
+        -Wshadow -Wold-style-cast -Wnon-virtual-dtor
+    )
+endif()
+
+# SDL3 setup
+target_compile_definitions(FallingSandSimulator PRIVATE SDL_MAIN_USE_CALLBACKS)
+target_link_libraries(FallingSandSimulator PRIVATE SDL3::SDL3)
+
+# Windows DLL copy
+if (WIN32)
+    add_custom_command(TARGET FallingSandSimulator POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "$<TARGET_FILE:SDL3::SDL3>"
+            "$<TARGET_FILE_DIR:FallingSandSimulator>"
+        VERBATIM
+    )
+endif()
