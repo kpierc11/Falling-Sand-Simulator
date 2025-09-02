@@ -5,7 +5,6 @@
 #include <chrono>
 #include <random>
 
-
 struct SandParticle
 {
 	SDL_FRect rect{};
@@ -17,34 +16,38 @@ struct SandParticle
 	bool isWater;
 };
 
-
-class SandSimulator {
+class SandSimulator
+{
 
 public:
-
 	SandSimulator();
 
 	~SandSimulator();
 
-	std::vector<SandParticle>mGrid;
+	std::vector<SandParticle> mGrid;
 
 	bool InitSandGrid();
 	void SimulationLoop();
 
-	SDL_Renderer* GetRenderer() {
+	SDL_Renderer *GetRenderer()
+	{
 		return mRenderer;
 	}
-	SDL_Window* GetWindow() {
+	SDL_Window *GetWindow()
+	{
 		return mWindow;
 	}
-	int GetColumns() const {
+	int GetColumns() const
+	{
 		return mColumns;
 	}
-	int GetRows() const {
+	int GetRows() const
+	{
 		return mRows;
 	}
 
-	float GetSandSize() const {
+	int GetSandSize() const
+	{
 		return mSandSize;
 	}
 
@@ -57,22 +60,19 @@ private:
 	void ShiftParticleLeftOrRight(int index);
 	void ShiftWaterParticle(int index);
 
-
 private:
-	float mSandSize;
+	int mSandSize;
 	int mScreenWidth;
 	int mScreenHeight;
 	int mRows;
 	int mColumns;
-	SDL_Window* mWindow;
+	SDL_Window *mWindow;
 	bool mDone = false;
-	SDL_Renderer* mRenderer;
+	SDL_Renderer *mRenderer;
 	int mRandomNum;
 	bool mMouseDown;
 	std::mt19937 mRng;
 	std::uniform_int_distribution<> mDistrib;
 	SDL_FRect mMouseArea;
-	int mMouseAreaSize; 
-
+	int mMouseAreaSize;
 };
-

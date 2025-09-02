@@ -1,28 +1,28 @@
 #include "SandSimulator.hpp"
 
-SandSimulator::SandSimulator() :
-	mSandSize(6),
-	mScreenWidth(1280),
-	mScreenHeight(1000),
-	mRows(mScreenHeight / mSandSize),
-	mColumns(mScreenWidth / mSandSize),
-	mWindow(nullptr),
-	mRenderer(nullptr),
-	mRandomNum(0),
-	mDone(false),
-	mMouseDown(false),
-	mRng(std::mt19937(std::random_device{}())),
-	mDistrib(std::uniform_int_distribution<>(1, 4)),
-	mMouseArea({}),
-	mMouseAreaSize(20)
+SandSimulator::SandSimulator() : mSandSize(6),
+								 mScreenWidth(1280),
+								 mScreenHeight(1000),
+								 mRows(mScreenHeight / mSandSize),
+								 mColumns(mScreenWidth / mSandSize),
+								 mWindow(nullptr),
+								 mDone(false),
+								 mRenderer(nullptr),
+								 mRandomNum(0),
+
+								 mMouseDown(false),
+								 mRng(std::mt19937(std::random_device{}())),
+								 mDistrib(std::uniform_int_distribution<>(1, 4)),
+								 mMouseArea({}),
+								 mMouseAreaSize(20)
 {
 
-	for (int i = 0; i < mRows; i++) {
-		for (int j = 0; j < mColumns; j++) {
-
+	for (int i = 0; i < mRows; i++)
+	{
+		for (int j = 0; j < mColumns; j++)
+		{
 
 			mRandomNum = mDistrib(mRng);
-
 
 			SandParticle particle;
 			particle.rect.h = mSandSize;
@@ -34,7 +34,6 @@ SandSimulator::SandSimulator() :
 			if (i > mRows - 100)
 			{
 				particle.isWater = 1;
-
 			}
 
 			// Color water particles
@@ -46,62 +45,61 @@ SandSimulator::SandSimulator() :
 				particle.a = 255;
 				switch (mRandomNum)
 				{
-					case 1:
+				case 1:
 					particle.r = 26;
 					particle.g = 67;
 					particle.b = 96;
 					particle.a = 255;
 					break;
-					case 2:
+				case 2:
 					particle.r = 41;
 					particle.g = 128;
 					particle.b = 185;
 					particle.a = 255;
 					break;
-					case 3:
+				case 3:
 					particle.r = 41;
 					particle.g = 128;
 					particle.b = 185;
 					particle.a = 255;
 					break;
-					case 4:
+				case 4:
 					particle.r = 26;
 					particle.g = 67;
 					particle.b = 96;
 					particle.a = 255;
 					break;
 				}
-
 			}
-			else {
+			else
+			{
 				switch (mRandomNum)
 				{
-					case 1:
+				case 1:
 					particle.r = 125;
 					particle.g = 102;
 					particle.b = 8;
 					particle.a = 255;
 					break;
-					case 2:
+				case 2:
 					particle.r = 154;
 					particle.g = 125;
 					particle.b = 10;
 					particle.a = 255;
 					break;
-					case 3:
+				case 3:
 					particle.r = 183;
 					particle.g = 149;
 					particle.b = 11;
 					particle.a = 255;
 					break;
-					case 4:
+				case 4:
 					particle.r = 212;
 					particle.g = 172;
 					particle.b = 13;
 					particle.a = 255;
 					break;
 				}
-
 			}
 
 			particle.isShowing = 0;
@@ -109,14 +107,10 @@ SandSimulator::SandSimulator() :
 			mGrid.push_back(particle);
 		}
 	}
-
 }
-
 
 SandSimulator::~SandSimulator()
 {
-
-
 }
 
 bool SandSimulator::InitSandGrid()
@@ -130,12 +124,11 @@ bool SandSimulator::InitSandGrid()
 		"Sand Simulator",
 		mScreenWidth,
 		mScreenHeight,
-		SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
-	);
+		SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
 	// Check that the window was successfully created
-	if (mWindow == NULL) {
-
+	if (mWindow == NULL)
+	{
 		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Could not create window: %s\n", SDL_GetError());
 		return 1;
 	}
@@ -143,7 +136,8 @@ bool SandSimulator::InitSandGrid()
 	mRenderer = SDL_CreateRenderer(mWindow, NULL);
 
 	// Check that the window was successfully created
-	if (mRenderer == NULL) {
+	if (mRenderer == NULL)
+	{
 		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Could not create renderer: %s\n", SDL_GetError());
 		return 1;
 	}
@@ -154,14 +148,13 @@ void SandSimulator::SimulationLoop()
 
 	while (!mDone)
 	{
-		//Set initial draw color
+		// Set initial draw color
 		SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
 
-		//Clear back buffer
+		// Clear back buffer
 		SDL_RenderClear(mRenderer);
 
 		SDL_SetRenderDrawColor(mRenderer, 0, 0, 255, 255);
-
 
 		HandleInput();
 		DrawGrid();
@@ -169,8 +162,6 @@ void SandSimulator::SimulationLoop()
 		// Show everything on screen
 		SDL_RenderPresent(GetRenderer());
 	}
-
-
 }
 
 void SandSimulator::DrawGrid()
@@ -178,14 +169,13 @@ void SandSimulator::DrawGrid()
 
 	RenderParticles();
 	UpdateParticlePositions();
-
 }
 
 void SandSimulator::RenderParticles()
 {
 	mRandomNum = mDistrib(mRng);
 
-	//Render Grid 
+	// Render Grid
 	for (auto sandParticle = mGrid.begin(); sandParticle != mGrid.end(); ++sandParticle)
 	{
 		if (sandParticle->isShowing)
@@ -195,9 +185,7 @@ void SandSimulator::RenderParticles()
 			SDL_RenderFillRect(mRenderer, &sandParticle->rect);
 		}
 	}
-
 }
-
 
 void SandSimulator::UpdateParticlePositions()
 {
@@ -218,11 +206,8 @@ void SandSimulator::UpdateParticlePositions()
 			{
 				ShiftWaterParticle(i);
 			}
-
 		}
-
 	}
-
 }
 
 void SandSimulator::HandleInput()
@@ -230,8 +215,10 @@ void SandSimulator::HandleInput()
 
 	SDL_Event event;
 
-	while (SDL_PollEvent(&event)) {
-		if (event.type == SDL_EVENT_QUIT) {
+	while (SDL_PollEvent(&event))
+	{
+		if (event.type == SDL_EVENT_QUIT)
+		{
 			mDone = true;
 		}
 
@@ -252,21 +239,19 @@ void SandSimulator::HandleInput()
 			{
 
 				mMouseAreaSize -= 20;
-
 			}
 			else if (event.wheel.y == -1)
 			{
 
 				mMouseAreaSize += 20;
 			}
-
 		}
 	}
 
-	//Set the grid value where the mouse is clicked to 1. 
+	// Set the grid value where the mouse is clicked to 1.
 	if (mMouseDown)
 	{
-		//Set grid values
+		// Set grid values
 		float mouseX = 0.0f;
 		float mouseY = 0.0f;
 		SDL_GetMouseState(&mouseX, &mouseY);
@@ -288,19 +273,17 @@ void SandSimulator::HandleInput()
 		SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
 		SDL_RenderRect(mRenderer, &mMouseArea);
 
-		for (auto& sandParticle : mGrid)
+		for (auto &sandParticle : mGrid)
 		{
 
 			float particleX = sandParticle.rect.x / GetSandSize();
 			float particleY = sandParticle.rect.y / GetSandSize();
 
-			if (particleX == mMouseArea.x && particleY == mMouseArea.y && !sandParticle.isShowing)
+			if (particleX == gridX && particleY == gridY && !sandParticle.isShowing)
 			{
 				sandParticle.isShowing = 1;
 			}
-
 		}
-
 	}
 }
 
@@ -315,14 +298,14 @@ void SandSimulator::ShiftParticleDown(int index)
 
 void SandSimulator::ShiftParticleLeftOrRight(int index)
 {
-	//shift left
+	// shift left
 	if (mRandomNum == 1 && mGrid[(index + mColumns) - 1].isShowing == 0)
 	{
 		mGrid[index].isShowing = 0;
 		mGrid[index + mColumns - 1].isShowing = 1;
 	}
 
-	//shift right
+	// shift right
 	if (mRandomNum == 2 && mGrid[(index + mColumns) + 1].isShowing == 0)
 	{
 		mGrid[index].isShowing = 0;
@@ -330,11 +313,10 @@ void SandSimulator::ShiftParticleLeftOrRight(int index)
 	}
 }
 
-
 void SandSimulator::ShiftWaterParticle(int index)
 {
-	//shift right and up and down
-	//if (mGrid[(index + mColumns) + 1].isShowing == 0)
+	// shift right and up and down
+	// if (mGrid[(index + mColumns) + 1].isShowing == 0)
 	//{
 	/*mGrid[index].isShowing = 0;
 	mGrid[index + mColumns - 1].isShowing = 1;*/
