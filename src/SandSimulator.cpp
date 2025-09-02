@@ -232,9 +232,6 @@ void SandSimulator::HandleInput()
 		}
 		if (event.type == SDL_EVENT_MOUSE_WHEEL)
 		{
-
-			std::cout << "Mouse Scrolled bitch. " << std::endl;
-			std::cout << event.wheel.y << std::endl;
 			if (event.wheel.y == 1)
 			{
 
@@ -259,16 +256,10 @@ void SandSimulator::HandleInput()
 		const int gridX = static_cast<int>(mouseX / GetSandSize());
 		const int gridY = static_cast<int>(mouseY / GetSandSize());
 
-		std::cout << "Mouse X: " << gridX << std::endl;
-		std::cout << "Mouse Y:" << gridY << std::endl;
-
 		mMouseArea.h = mMouseAreaSize;
 		mMouseArea.w = mMouseAreaSize;
 		mMouseArea.x = mouseX - (mMouseArea.h / 2);
 		mMouseArea.y = mouseY - (mMouseArea.w / 2);
-
-		std::cout << "Mouse Area X: " << mMouseArea.x << std::endl;
-		std::cout << "Mouse Area Y:" << mMouseArea.y << std::endl;
 
 		SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
 		SDL_RenderRect(mRenderer, &mMouseArea);
