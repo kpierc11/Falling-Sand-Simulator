@@ -1,2 +1,3 @@
 # FallingSandSimulator
-![image](https://github.com/user-attachments/assets/232cca89-5a36-4be8-a807-1528f5019a30)
+<img width="1269" height="1017" alt="image" src="https://github.com/user-attachments/assets/0604237e-ef46-4795-9cf0-fe1c9e35333e" />
+
