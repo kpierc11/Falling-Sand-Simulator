@@ -22,11 +22,13 @@ Make sure you have the following installed:
 ```bash
 git clone https://github.com/kpierc11/Falling-Sand-Simulator.git
 cd Falling-Sand-Simulator
+```
 
 ### Build
 
 ```bash
-git clone https://github.com/kpierc11/Falling-Sand-Simulator.git
-cd Falling-Sand-Simulator
+mkdir build
+cd build
+cmake ..
 
 
