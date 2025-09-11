@@ -11,13 +11,7 @@
 1. Clone the repository:
    ```bash
    git clone https://github.com/kpierc11/Falling-Sand-Simulator.git
-    ```bash
-   cd Falling-Sand-Simulator
+``
    ```bash
-   mkdir build
-    ```bash
-   cd build
-    ```bash
-   cmake --build .
-
+    cd Falling-Sand-Simulator
 
