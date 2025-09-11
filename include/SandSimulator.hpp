@@ -58,10 +58,9 @@ private:
 	void HandleInput();
 	void ShiftParticleDown(int index);
 	void ShiftParticleLeftOrRight(int index);
-	void ShiftWaterParticle(int index);
 
 private:
-	int mSandSize;
+	float mSandSize;
 	int mScreenWidth;
 	int mScreenHeight;
 	int mRows;
