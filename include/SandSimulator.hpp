@@ -5,15 +5,26 @@
 #include <chrono>
 #include <random>
 
-struct SandParticle
+struct Color
 {
-	SDL_FRect rect{};
 	Uint8 r;
 	Uint8 g;
 	Uint8 b;
 	Uint8 a;
-	bool isShowing;
-	bool isWater;
+};
+
+struct Particle
+{
+	SDL_FRect rect{};
+	Color color;
+	bool isShowing{false};
+	void ShiftParticleDown(int index);
+	void ShiftParticleLeftOrRight(int index);
+};
+
+struct SandParticle
+{
+	
 };
 
 class SandSimulator
@@ -24,10 +35,11 @@ public:
 
 	~SandSimulator();
 
-	std::vector<SandParticle> mGrid;
+	std::vector<Particle> mGrid;
 
 	bool InitSandGrid();
 	void SimulationLoop();
+	void EndSimulation();
 
 	SDL_Renderer *GetRenderer()
 	{
@@ -52,14 +64,15 @@ public:
 	}
 
 private:
-	void DrawGrid();
-	void RenderParticles();
-	void UpdateParticlePositions();
 	void HandleInput();
+	void UpdateParticles();
+	void Render();
 	void ShiftParticleDown(int index);
 	void ShiftParticleLeftOrRight(int index);
 
 private:
+	Uint64 mCurrentFrameTime;
+	Uint64 mPreviousFrameTime;
 	float mSandSize;
 	int mScreenWidth;
 	int mScreenHeight;
@@ -74,4 +87,5 @@ private:
 	std::uniform_int_distribution<> mDistrib;
 	SDL_FRect mMouseArea;
 	int mMouseAreaSize;
+	int mAmountShowingOnGrid;
 };

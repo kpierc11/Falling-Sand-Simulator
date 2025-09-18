@@ -1,7 +1,9 @@
 #include "SandSimulator.hpp"
 #include "cmath"
 
-SandSimulator::SandSimulator() : mSandSize(8),
+SandSimulator::SandSimulator() : mCurrentFrameTime(SDL_GetTicks()),
+								 mPreviousFrameTime(0),
+								 mSandSize(8),
 								 mScreenWidth(1280),
 								 mScreenHeight(1000),
 								 mRows(static_cast<int>(mScreenHeight / mSandSize)),
@@ -14,7 +16,8 @@ SandSimulator::SandSimulator() : mSandSize(8),
 								 mRng(std::mt19937(std::random_device{}())),
 								 mDistrib(std::uniform_int_distribution<>(1, 6)),
 								 mMouseArea({}),
-								 mMouseAreaSize(20)
+								 mMouseAreaSize(20),
+								 mAmountShowingOnGrid(0)
 {
 
 	for (int i = 0; i < mRows; i++)
@@ -24,7 +27,7 @@ SandSimulator::SandSimulator() : mSandSize(8),
 
 			mRandomNum = mDistrib(mRng);
 
-			SandParticle particle;
+			Particle particle;
 			particle.rect.h = mSandSize;
 			particle.rect.w = mSandSize;
 			particle.rect.x = static_cast<float>(j * mSandSize);
@@ -33,40 +36,22 @@ SandSimulator::SandSimulator() : mSandSize(8),
 			switch (mRandomNum)
 			{
 			case 1:
-				particle.r = 150;
-				particle.g = 114;
-				particle.b = 22;
-				particle.a = 255;
+				particle.color = {150, 114, 22, 255};
 				break;
 			case 2:
-				particle.r = 161;
-				particle.g = 130;
-				particle.b = 50;
-				particle.a = 255;
+				particle.color = {161, 130, 50, 255};
 				break;
 			case 3:
-				particle.r = 177;
-				particle.g = 153;
-				particle.b = 87;
-				particle.a = 255;
+				particle.color = {177, 153, 87, 255};
 				break;
 			case 4:
-				particle.r = 192;
-				particle.g = 173;
-				particle.b = 121;
-				particle.a = 255;
+				particle.color = {192, 173, 121, 255};
 				break;
 			case 5:
-				particle.r = 205;
-				particle.g = 190;
-				particle.b = 144;
-				particle.a = 255;
+				particle.color = {205, 190, 144, 255};
 				break;
 			case 6:
-				particle.r = 228;
-				particle.g = 214;
-				particle.b = 172;
-				particle.a = 255;
+				particle.color = {228, 214, 172, 255};
 				break;
 			}
 
@@ -118,60 +103,21 @@ void SandSimulator::SimulationLoop()
 
 	while (!mDone)
 	{
-		// Set initial draw color
-		SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
+		mCurrentFrameTime = SDL_GetTicks();
 
-		// Clear back buffer
-		SDL_RenderClear(mRenderer);
-
-		SDL_SetRenderDrawColor(mRenderer, 0, 0, 255, 255);
+		float deltaTime = (mCurrentFrameTime - mPreviousFrameTime) / 1000.0f;
+		mPreviousFrameTime = mCurrentFrameTime;
 
 		HandleInput();
-		DrawGrid();
+		UpdateParticles();
+		Render();
 
-		// Show everything on screen
-		SDL_RenderPresent(GetRenderer());
-	}
-}
-
-void SandSimulator::DrawGrid()
-{
-
-	RenderParticles();
-	UpdateParticlePositions();
-}
-
-void SandSimulator::RenderParticles()
-{
-	mRandomNum = mDistrib(mRng);
-
-	// Render Grid
-	for (auto sandParticle = mGrid.begin(); sandParticle != mGrid.end(); ++sandParticle)
-	{
-		if (sandParticle->isShowing)
-		{
-			// Render the particle
-			SDL_SetRenderDrawColor(mRenderer, sandParticle->r, sandParticle->g, sandParticle->b, sandParticle->a);
-			SDL_RenderFillRect(mRenderer, &sandParticle->rect);
-		}
-	}
-}
-
-void SandSimulator::UpdateParticlePositions()
-{
-	for (int i = mColumns * mRows - 1; i > 0; i--)
-	{
-		if (mGrid[i].isShowing && i + mColumns < mColumns * mRows - 1)
-		{
-			if (mGrid[i + mColumns].isShowing == 0)
-			{
-				ShiftParticleDown(i);
-			}
-			else if (mGrid[i + mColumns].isShowing)
-			{
-				ShiftParticleLeftOrRight(i);
-			}
-		}
+		// Uint64 frameEndTime = SDL_GetTicks();
+		// float frameDuration = static_cast<float>(frameEndTime - mCurrentFrameTime);
+		// if (frameDuration < 1000.0f / 60.0f)
+		// {
+		// 	SDL_Delay(static_cast<Uint32>((1000.0f / 60.0f) - frameDuration));
+		// }
 	}
 }
 
@@ -228,8 +174,8 @@ void SandSimulator::HandleInput()
 		// int mouseAreaGridX = static_cast<int>(mMouseArea.x / GetSandSize());
 		// int mouseAreaGridY = static_cast<int>(mMouseArea.y / GetSandSize());
 
-		SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
-		SDL_RenderRect(mRenderer, &mMouseArea);
+		// SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
+		// SDL_RenderRect(mRenderer, &mMouseArea);
 
 		for (auto &sandParticle : mGrid)
 		{
@@ -243,6 +189,62 @@ void SandSimulator::HandleInput()
 			}
 		}
 	}
+}
+
+void SandSimulator::UpdateParticles()
+{
+	for (int i = mColumns * mRows - 1; i > 0; i--)
+	{
+		if (mGrid[i].isShowing && i + mColumns < mColumns * mRows - 1)
+		{
+			if (mGrid[i + mColumns].isShowing == 0)
+			{
+				ShiftParticleDown(i);
+			}
+			else if (mGrid[i + mColumns].isShowing)
+			{
+				ShiftParticleLeftOrRight(i);
+			}
+		}
+	}
+}
+
+void SandSimulator::Render()
+{
+	// Set initial draw color
+	SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
+
+	// Clear back buffer
+	SDL_RenderClear(mRenderer);
+
+	SDL_SetRenderDrawColor(mRenderer, 0, 0, 255, 255);
+
+	mRandomNum = mDistrib(mRng);
+
+	// std::cout << mAmountShowingOnGrid << "\n";
+
+	mAmountShowingOnGrid = 0;
+
+	// Render Grid
+	for (auto sandParticle = mGrid.begin(); sandParticle != mGrid.end(); ++sandParticle)
+	{
+		if (sandParticle->isShowing)
+		{
+			SDL_SetRenderDrawColor(mRenderer, sandParticle->color.r, sandParticle->color.g, sandParticle->color.b, sandParticle->color.a);
+			SDL_RenderFillRect(mRenderer, &sandParticle->rect);
+			mAmountShowingOnGrid++;
+		}
+	}
+
+	// Show everything on screen
+	SDL_RenderPresent(GetRenderer());
+}
+
+void SandSimulator::EndSimulation()
+{
+	SDL_DestroyWindow(mWindow);
+
+	SDL_Quit();
 }
 
 void SandSimulator::ShiftParticleDown(int index)
