@@ -4,6 +4,7 @@
 #include <SDL3/SDL_audio.h>
 #include <chrono>
 #include <random>
+#include "imgui.h"
 
 struct Color
 {
@@ -88,4 +89,5 @@ private:
 	SDL_FRect mMouseArea;
 	int mMouseAreaSize;
 	int mAmountShowingOnGrid;
+	ImGuiIO mIO;
 };

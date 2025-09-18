@@ -1,5 +1,12 @@
 #include "SandSimulator.hpp"
+#include "backends/imgui_impl_sdl3.h"
+#include "backends/imgui_impl_sdlrenderer3.h"
 #include "cmath"
+
+bool show_demo_window = true;
+bool show_another_window = true;
+bool particleSquare = true;
+ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 SandSimulator::SandSimulator() : mCurrentFrameTime(SDL_GetTicks()),
 								 mPreviousFrameTime(0),
@@ -17,7 +24,8 @@ SandSimulator::SandSimulator() : mCurrentFrameTime(SDL_GetTicks()),
 								 mDistrib(std::uniform_int_distribution<>(1, 6)),
 								 mMouseArea({}),
 								 mMouseAreaSize(20),
-								 mAmountShowingOnGrid(0)
+								 mAmountShowingOnGrid(0),
+								 mIO()
 {
 
 	for (int i = 0; i < mRows; i++)
@@ -72,6 +80,8 @@ bool SandSimulator::InitSandGrid()
 	// Initialize SDL3
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 
+	float main_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
+
 	// Create an application window with the following settings:
 	mWindow = SDL_CreateWindow(
 		"Sand Simulator",
@@ -95,6 +105,27 @@ bool SandSimulator::InitSandGrid()
 		return 0;
 	}
 
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	mIO = ImGui::GetIO();
+	(void)mIO;
+	mIO.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+	mIO.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();
+	// ImGui::StyleColorsLight();
+
+	// Setup scaling
+	ImGuiStyle &style = ImGui::GetStyle();
+	style.ScaleAllSizes(main_scale); // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
+	// style.FontScaleDpi = main_scale;        // Set initial font scale. (using io.ConfigDpiScaleFonts=true makes this unnecessary. We leave both here for documentation purpose)
+
+	// Setup Platform/Renderer backends
+	ImGui_ImplSDL3_InitForSDLRenderer(mWindow, mRenderer);
+	ImGui_ImplSDLRenderer3_Init(mRenderer);
+
 	return 1;
 }
 
@@ -110,6 +141,22 @@ void SandSimulator::SimulationLoop()
 
 		HandleInput();
 		UpdateParticles();
+
+		// Start the Dear ImGui frame
+		ImGui_ImplSDLRenderer3_NewFrame();
+		ImGui_ImplSDL3_NewFrame();
+		ImGui::NewFrame();
+
+		static float f = 0.0f;
+		static int counter = 0;
+
+		ImGui::Begin("Sand Simulator Settings"); // Create a window called "Hello, world!" and append into it.
+
+		ImGui::Text("Can change the color and particle style"); // Display some text (you can use a format strings too)
+		ImGui::Checkbox("Point Type", &particleSquare);			// Edit bools storing our window open/close state
+		
+		ImGui::End();
+
 		Render();
 
 		// Uint64 frameEndTime = SDL_GetTicks();
@@ -128,6 +175,7 @@ void SandSimulator::HandleInput()
 
 	while (SDL_PollEvent(&event))
 	{
+		ImGui_ImplSDL3_ProcessEvent(&event);
 		if (event.type == SDL_EVENT_QUIT)
 		{
 			mDone = true;
@@ -188,6 +236,7 @@ void SandSimulator::HandleInput()
 				sandParticle.isShowing = 1;
 			}
 		}
+		mAmountShowingOnGrid++;
 	}
 }
 
@@ -217,24 +266,37 @@ void SandSimulator::Render()
 	// Clear back buffer
 	SDL_RenderClear(mRenderer);
 
-	SDL_SetRenderDrawColor(mRenderer, 0, 0, 255, 255);
+	// SDL_SetRenderDrawColor(mRenderer, 0, 0, 255, 255);
 
 	mRandomNum = mDistrib(mRng);
 
 	// std::cout << mAmountShowingOnGrid << "\n";
-
-	mAmountShowingOnGrid = 0;
 
 	// Render Grid
 	for (auto sandParticle = mGrid.begin(); sandParticle != mGrid.end(); ++sandParticle)
 	{
 		if (sandParticle->isShowing)
 		{
-			SDL_SetRenderDrawColor(mRenderer, sandParticle->color.r, sandParticle->color.g, sandParticle->color.b, sandParticle->color.a);
-			SDL_RenderFillRect(mRenderer, &sandParticle->rect);
-			mAmountShowingOnGrid++;
+
+			SDL_SetRenderDrawColor(mRenderer, static_cast<Uint8>(clear_color.x * 255.0f), static_cast<Uint8>(clear_color.y * 255.0f), static_cast<Uint8>(clear_color.z * 255.0f), static_cast<Uint8>(clear_color.w * 255.0f));
+
+			if (particleSquare)
+			{
+				SDL_RenderRect(mRenderer, &sandParticle->rect);
+			}
+			else
+			{
+				SDL_RenderPoint(mRenderer, sandParticle->rect.x, sandParticle->rect.y);
+			}
 		}
 	}
+
+	// Rendering
+	ImGui::Render();
+	SDL_SetRenderScale(mRenderer, mIO.DisplayFramebufferScale.x, mIO.DisplayFramebufferScale.y);
+	// SDL_SetRenderDrawColorFloat(mRenderer, clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+	// SDL_RenderClear(mRenderer);
+	ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), mRenderer);
 
 	// Show everything on screen
 	SDL_RenderPresent(GetRenderer());
@@ -242,8 +304,11 @@ void SandSimulator::Render()
 
 void SandSimulator::EndSimulation()
 {
-	SDL_DestroyWindow(mWindow);
 
+	ImGui_ImplSDLRenderer3_Shutdown();
+	ImGui_ImplSDL3_Shutdown();
+	ImGui::DestroyContext();
+	SDL_DestroyWindow(mWindow);
 	SDL_Quit();
 }
 
