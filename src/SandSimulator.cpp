@@ -10,60 +10,56 @@ ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 SandSimulator::SandSimulator() : mCurrentFrameTime(SDL_GetTicks()),
 								 mPreviousFrameTime(0),
-								 mSandSize(8),
 								 mScreenWidth(1280),
 								 mScreenHeight(1000),
 								 mRows(static_cast<int>(mScreenHeight / mSandSize)),
 								 mColumns(static_cast<int>(mScreenWidth / mSandSize)),
-								 mWindow(nullptr),
-								 mDone(false),
-								 mRenderer(nullptr),
-								 mRandomNum(0),
-								 mMouseDown(false),
-								 mRng(std::mt19937(std::random_device{}())),
-								 mDistrib(std::uniform_int_distribution<>(1, 6)),
-								 mMouseArea({}),
 								 mMouseAreaSize(20),
 								 mAmountShowingOnGrid(0),
+								 mRandomNum(0),
+								 mSandSize(2),
+								 mMouseDown(false),
+								 mDone(false),
+								 mWindow(nullptr),
+								 mRenderer(nullptr),
+								 mMouseArea({}),
+								 mGrid({}),
+								 mActiveParticles({}),
+								 mRng(std::mt19937(std::random_device{}())),
+								 mDistrib(std::uniform_int_distribution<>(1, 6)),
 								 mIO()
 {
+
+	mRows = mScreenHeight / mSandSize;
+	mColumns = mScreenWidth / mSandSize;
+
+	mGrid.clear();
+	mGrid.reserve(static_cast<size_t>(mRows * mColumns));
+
+	static const Color sandColors[] = {
+		{150, 114, 22, 255},
+		{161, 130, 50, 255},
+		{177, 153, 87, 255},
+		{192, 173, 121, 255},
+		{205, 190, 144, 255},
+		{228, 214, 172, 255}};
 
 	for (int i = 0; i < mRows; i++)
 	{
 		for (int j = 0; j < mColumns; j++)
 		{
-
-			mRandomNum = mDistrib(mRng);
-
 			Particle particle;
-			particle.rect.h = mSandSize;
-			particle.rect.w = mSandSize;
-			particle.rect.x = static_cast<float>(j * mSandSize);
-			particle.rect.y = static_cast<float>(i * mSandSize);
 
-			switch (mRandomNum)
-			{
-			case 1:
-				particle.color = {150, 114, 22, 255};
-				break;
-			case 2:
-				particle.color = {161, 130, 50, 255};
-				break;
-			case 3:
-				particle.color = {177, 153, 87, 255};
-				break;
-			case 4:
-				particle.color = {192, 173, 121, 255};
-				break;
-			case 5:
-				particle.color = {205, 190, 144, 255};
-				break;
-			case 6:
-				particle.color = {228, 214, 172, 255};
-				break;
-			}
+			particle.rect = {
+				static_cast<float>(j * mSandSize),
+				static_cast<float>(i * mSandSize),
+				static_cast<float>(mSandSize),
+				static_cast<float>(mSandSize)};
 
-			particle.isShowing = 0;
+			int colorIndex = mDistrib(mRng) - 1;
+			particle.color = sandColors[colorIndex];
+
+			particle.isShowing = false;
 
 			mGrid.push_back(particle);
 		}
@@ -80,7 +76,7 @@ bool SandSimulator::InitSandGrid()
 	// Initialize SDL3
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 
-	float main_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
+	// float main_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
 
 	// Create an application window with the following settings:
 	mWindow = SDL_CreateWindow(
@@ -119,7 +115,7 @@ bool SandSimulator::InitSandGrid()
 
 	// Setup scaling
 	ImGuiStyle &style = ImGui::GetStyle();
-	style.ScaleAllSizes(main_scale); // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
+	// style.ScaleAllSizes(main_scale); // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
 	// style.FontScaleDpi = main_scale;        // Set initial font scale. (using io.ConfigDpiScaleFonts=true makes this unnecessary. We leave both here for documentation purpose)
 
 	// Setup Platform/Renderer backends
@@ -134,20 +130,19 @@ void SandSimulator::SimulationLoop()
 
 	while (!mDone)
 	{
-		mCurrentFrameTime = SDL_GetTicks();
+		// mCurrentFrameTime = SDL_GetTicks();
 
-		float deltaTime = (mCurrentFrameTime - mPreviousFrameTime) / 1000.0f;
-		mPreviousFrameTime = mCurrentFrameTime;
-
-		HandleInput();
-		UpdateParticles();
+		// float deltaTime = (mCurrentFrameTime - mPreviousFrameTime) / 1000.0f;
+		// mPreviousFrameTime = mCurrentFrameTime;
 
 		// Start the Dear ImGui frame
 		ImGui_ImplSDLRenderer3_NewFrame();
 		ImGui_ImplSDL3_NewFrame();
 		ImGui::NewFrame();
 
-		static float f = 0.0f;
+		HandleInput();
+		UpdateParticles();
+
 		static int counter = 0;
 
 		ImGui::Begin("Sand Simulator Settings"); // Create a window called "Hello, world!" and append into it.
@@ -156,7 +151,13 @@ void SandSimulator::SimulationLoop()
 		ImGui::Checkbox("Point Type", &particleSquare);			// Edit bools storing our window open/close state
 		// ImGui::Checkbox("Another Window", &show_another_window);
 
-		// ImGui::SliderFloat("float", &f, 0.0f, 1.0f);			 // Edit 1 float using a slider from 0.0f to 1.0f
+		static int prevSandSize = mSandSize;
+		ImGui::SliderInt("Sand Size", &mSandSize, 1, 20);
+		if (mSandSize != prevSandSize)
+		{
+			RebuildGrid();
+			prevSandSize = mSandSize;
+		} // Edit 1 float using a slider from 0.0f to 1.0f
 		ImGui::ColorEdit3("clear color", (float *)&clear_color); // Edit 3 floats representing a color
 
 		ImGui::End();
@@ -180,6 +181,12 @@ void SandSimulator::HandleInput()
 	while (SDL_PollEvent(&event))
 	{
 		ImGui_ImplSDL3_ProcessEvent(&event);
+
+		if(mIO.WantCaptureMouse)
+		{
+			break;
+		}
+
 		if (event.type == SDL_EVENT_QUIT)
 		{
 			mDone = true;
@@ -187,11 +194,17 @@ void SandSimulator::HandleInput()
 
 		if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
 		{
-			mMouseDown = true;
+			if (!mIO.WantCaptureMouse)
+			{
+				mMouseDown = true;
+			};
 		}
 		if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
 		{
-			mMouseDown = false;
+			if (!mIO.WantCaptureMouse)
+			{
+				mMouseDown = false;
+			}
 		}
 		if (event.type == SDL_EVENT_MOUSE_WHEEL)
 		{
@@ -207,8 +220,7 @@ void SandSimulator::HandleInput()
 		}
 	}
 
-	// Set the grid value where the mouse is clicked to 1.
-	if (mMouseDown)
+	if (!mIO.WantCaptureMouse && mMouseDown)
 	{
 		// Set grid values
 		float mouseX = 0.0f;
@@ -229,18 +241,18 @@ void SandSimulator::HandleInput()
 		// SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
 		// SDL_RenderRect(mRenderer, &mMouseArea);
 
-		for (auto &sandParticle : mGrid)
+		if (gridX >= 0 && gridX < mColumns &&
+			gridY >= 0 && gridY < mRows)
 		{
+			int index = gridY * mColumns + gridX;
+			Particle &sandParticle = mGrid[index];
 
-			float particleX = sandParticle.rect.x / GetSandSize();
-			float particleY = sandParticle.rect.y / GetSandSize();
-
-			if (particleX == gridX && particleY == gridY && !sandParticle.isShowing)
+			if (!sandParticle.isShowing)
 			{
-				sandParticle.isShowing = 1;
+				sandParticle.isShowing = true;
 			}
+			mActiveParticles.push_back(sandParticle);
 		}
-		mAmountShowingOnGrid++;
 	}
 }
 
@@ -270,40 +282,74 @@ void SandSimulator::Render()
 	// Clear back buffer
 	SDL_RenderClear(mRenderer);
 
-	// SDL_SetRenderDrawColor(mRenderer, 0, 0, 255, 255);
-
 	mRandomNum = mDistrib(mRng);
 
-	// std::cout << mAmountShowingOnGrid << "\n";
+	mRows = mScreenHeight / mSandSize;
+	mColumns = mScreenWidth / mSandSize;
 
 	// Render Grid
-	for (auto sandParticle = mGrid.begin(); sandParticle != mGrid.end(); ++sandParticle)
+	for (Particle &sandParticle : mGrid)
 	{
-		if (sandParticle->isShowing)
+		if (!sandParticle.isShowing)
+			continue;
+
+		SDL_SetRenderDrawColor(mRenderer, sandParticle.color.r, sandParticle.color.g, sandParticle.color.b, sandParticle.color.a);
+		// SDL_SetRenderDrawColor(mRenderer, static_cast<Uint8>(clear_color.x * 255.0f), static_cast<Uint8>(clear_color.y * 255.0f), static_cast<Uint8>(clear_color.z * 255.0f), static_cast<Uint8>(clear_color.w * 255.0f));
+
+		if (particleSquare)
 		{
-
-			SDL_SetRenderDrawColor(mRenderer, static_cast<Uint8>(clear_color.x * 255.0f), static_cast<Uint8>(clear_color.y * 255.0f), static_cast<Uint8>(clear_color.z * 255.0f), static_cast<Uint8>(clear_color.w * 255.0f));
-
-			if (particleSquare)
-			{
-				SDL_RenderRect(mRenderer, &sandParticle->rect);
-			}
-			else
-			{
-				SDL_RenderPoint(mRenderer, sandParticle->rect.x, sandParticle->rect.y);
-			}
+			SDL_RenderFillRect(mRenderer, &sandParticle.rect);
+		}
+		else
+		{
+			SDL_RenderPoint(mRenderer, sandParticle.rect.x, sandParticle.rect.y);
 		}
 	}
 
-	// Rendering
+	// IM Gui Render
 	ImGui::Render();
-	SDL_SetRenderScale(mRenderer, mIO.DisplayFramebufferScale.x, mIO.DisplayFramebufferScale.y);
-	// SDL_SetRenderDrawColorFloat(mRenderer, clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-	// SDL_RenderClear(mRenderer);
+	// SDL_SetRenderScale(mRenderer, mIO.DisplayFramebufferScale.x, mIO.DisplayFramebufferScale.y);
 	ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), mRenderer);
 
 	// Show everything on screen
-	SDL_RenderPresent(GetRenderer());
+	SDL_RenderPresent(mRenderer);
+}
+
+void SandSimulator::RebuildGrid()
+{
+	mRows = mScreenHeight / mSandSize;
+	mColumns = mScreenWidth / mSandSize;
+
+	mGrid.clear();
+	mGrid.reserve(static_cast<size_t>(mRows * mColumns));
+
+	static const Color sandColors[] = {
+		{150, 114, 22, 255},
+		{161, 130, 50, 255},
+		{177, 153, 87, 255},
+		{192, 173, 121, 255},
+		{205, 190, 144, 255},
+		{228, 214, 172, 255}};
+
+	for (int i = 0; i < mRows; i++)
+	{
+		for (int j = 0; j < mColumns; j++)
+		{
+			Particle particle;
+
+			particle.rect = {
+				static_cast<float>(j * mSandSize),
+				static_cast<float>(i * mSandSize),
+				static_cast<float>(mSandSize),
+				static_cast<float>(mSandSize)};
+
+			int colorIndex = mDistrib(mRng) - 1;
+			particle.color = sandColors[colorIndex];
+			particle.isShowing = false;
+
+			mGrid.push_back(particle);
+		}
+	}
 }
 
 void SandSimulator::EndSimulation()
