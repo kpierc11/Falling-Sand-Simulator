@@ -255,7 +255,6 @@ void SandSimulator::HandleInput()
 			{
 				sandParticle.isShowing = true;
 			}
-			mActiveParticles.push_back(sandParticle);
 		}
 	}
 }
