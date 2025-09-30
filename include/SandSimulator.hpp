@@ -87,7 +87,7 @@ private:
 	SDL_FRect mMouseArea;
 	
 	std::vector<Particle> mGrid;
-	std::vector<Particle> mActiveParticles;
+	std::vector<Particle> mParticles;
 	std::mt19937 mRng;
 	std::uniform_int_distribution<> mDistrib;
 

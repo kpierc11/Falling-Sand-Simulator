@@ -5,7 +5,9 @@
 
 bool show_demo_window = true;
 bool show_another_window = true;
-bool particleSquare = true;
+bool points = false;
+bool filledSand = true;
+bool hollowSquares = false;
 ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 SandSimulator::SandSimulator() : mCurrentFrameTime(SDL_GetTicks()),
@@ -24,7 +26,7 @@ SandSimulator::SandSimulator() : mCurrentFrameTime(SDL_GetTicks()),
 								 mRenderer(nullptr),
 								 mMouseArea({}),
 								 mGrid({}),
-								 mActiveParticles({}),
+								 mParticles({}),
 								 mRng(std::mt19937(std::random_device{}())),
 								 mDistrib(std::uniform_int_distribution<>(1, 6)),
 								 mIO()
@@ -148,9 +150,11 @@ void SandSimulator::SimulationLoop()
 		ImGui::Begin("Sand Simulator Settings"); // Create a window called "Hello, world!" and append into it.
 
 		ImGui::Text("Can change the color and particle style"); // Display some text (you can use a format strings too)
-		ImGui::Checkbox("Point Type", &particleSquare);			// Edit bools storing our window open/close state
-		// ImGui::Checkbox("Another Window", &show_another_window);
-
+		ImGui::Checkbox("Filled Sand", &filledSand);
+		ImGui::Checkbox("Points", &points);
+		ImGui::Checkbox("Hollow Squares", &hollowSquares); // Edit bools storing our window open/close state
+		
+		
 		static int prevSandSize = mSandSize;
 		ImGui::SliderInt("Sand Size", &mSandSize, 1, 20);
 		if (mSandSize != prevSandSize)
@@ -182,7 +186,7 @@ void SandSimulator::HandleInput()
 	{
 		ImGui_ImplSDL3_ProcessEvent(&event);
 
-		if(mIO.WantCaptureMouse)
+		if (mIO.WantCaptureMouse)
 		{
 			break;
 		}
@@ -296,13 +300,21 @@ void SandSimulator::Render()
 		SDL_SetRenderDrawColor(mRenderer, sandParticle.color.r, sandParticle.color.g, sandParticle.color.b, sandParticle.color.a);
 		// SDL_SetRenderDrawColor(mRenderer, static_cast<Uint8>(clear_color.x * 255.0f), static_cast<Uint8>(clear_color.y * 255.0f), static_cast<Uint8>(clear_color.z * 255.0f), static_cast<Uint8>(clear_color.w * 255.0f));
 
-		if (particleSquare)
+		if (filledSand)
 		{
 			SDL_RenderFillRect(mRenderer, &sandParticle.rect);
 		}
-		else
+		else if (hollowSquares)
+		{
+			SDL_RenderRect(mRenderer, &sandParticle.rect);
+		}
+		else if (points)
 		{
 			SDL_RenderPoint(mRenderer, sandParticle.rect.x, sandParticle.rect.y);
+		}
+		else
+		{
+			SDL_RenderFillRect(mRenderer, &sandParticle.rect);
 		}
 	}
 
