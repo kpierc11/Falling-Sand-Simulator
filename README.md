@@ -1,5 +1,5 @@
 # FallingSandSimulator
-<img width="1269" height="1017" alt="image" src="https://github.com/user-attachments/assets/0604237e-ef46-4795-9cf0-fe1c9e35333e" />
+<img width="1274" height="1021" alt="image" src="https://github.com/user-attachments/assets/6d96c365-7f4d-484a-870d-fdc7ddf3212f" />
 
 # Falling Sand Simulator
 
