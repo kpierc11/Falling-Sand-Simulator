@@ -11,7 +11,7 @@ Built with **CMake** for easy cross-platform compilation.
 ### Prerequisites
 
 Make sure you have the following installed:
-
+- [Git](https://git-scm.com/)  
 - [CMake](https://cmake.org/) (3.10 or newer recommended)  
 - A C++17 compatible compiler (GCC, Clang, or MSVC)  
 
