@@ -23,7 +23,6 @@ struct Particle
 	void ShiftParticleLeftOrRight(int index);
 };
 
-
 class SandSimulator
 {
 
@@ -58,6 +57,8 @@ public:
 		return mSandSize;
 	}
 
+	bool isSimulationOver() const { return mDone; }
+
 private:
 	void HandleInput();
 	void UpdateParticles();
@@ -68,14 +69,12 @@ private:
 
 private:
 	Uint64 mCurrentFrameTime;
-	Uint64 mPreviousFrameTime;
 
 	int mScreenWidth;
 	int mScreenHeight;
 	int mRows;
 	int mColumns;
 	int mMouseAreaSize;
-	int mAmountShowingOnGrid;
 	int mRandomNum;
 	int mSandSize;
 
@@ -85,7 +84,7 @@ private:
 	SDL_Window *mWindow;
 	SDL_Renderer *mRenderer;
 	SDL_FRect mMouseArea;
-	
+
 	std::vector<Particle> mGrid;
 	std::vector<Particle> mParticles;
 	std::mt19937 mRng;

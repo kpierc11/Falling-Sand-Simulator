@@ -11,15 +11,13 @@ bool hollowSquares = false;
 ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 SandSimulator::SandSimulator() : mCurrentFrameTime(SDL_GetTicks()),
-								 mPreviousFrameTime(0),
-								 mScreenWidth(1280),
-								 mScreenHeight(1000),
-								 mRows(static_cast<int>(mScreenHeight / mSandSize)),
-								 mColumns(static_cast<int>(mScreenWidth / mSandSize)),
+								 mScreenWidth(1000),
+								 mScreenHeight(800),
+								 mRows(0),
+								 mColumns(0),
 								 mMouseAreaSize(20),
-								 mAmountShowingOnGrid(0),
 								 mRandomNum(0),
-								 mSandSize(2),
+								 mSandSize(8),
 								 mMouseDown(false),
 								 mDone(false),
 								 mWindow(nullptr),
@@ -31,41 +29,6 @@ SandSimulator::SandSimulator() : mCurrentFrameTime(SDL_GetTicks()),
 								 mDistrib(std::uniform_int_distribution<>(1, 6)),
 								 mIO()
 {
-
-	mRows = mScreenHeight / mSandSize;
-	mColumns = mScreenWidth / mSandSize;
-
-	mGrid.clear();
-	mGrid.reserve(static_cast<size_t>(mRows * mColumns));
-
-	static const Color sandColors[] = {
-		{150, 114, 22, 255},
-		{161, 130, 50, 255},
-		{177, 153, 87, 255},
-		{192, 173, 121, 255},
-		{205, 190, 144, 255},
-		{228, 214, 172, 255}};
-
-	for (int i = 0; i < mRows; i++)
-	{
-		for (int j = 0; j < mColumns; j++)
-		{
-			Particle particle;
-
-			particle.rect = {
-				static_cast<float>(j * mSandSize),
-				static_cast<float>(i * mSandSize),
-				static_cast<float>(mSandSize),
-				static_cast<float>(mSandSize)};
-
-			int colorIndex = mDistrib(mRng) - 1;
-			particle.color = sandColors[colorIndex];
-
-			particle.isShowing = false;
-
-			mGrid.push_back(particle);
-		}
-	}
 }
 
 SandSimulator::~SandSimulator()
@@ -103,6 +66,41 @@ bool SandSimulator::InitSandGrid()
 		return 0;
 	}
 
+	// Setup sand grid
+	mRows = mScreenHeight / mSandSize;
+	mColumns = mScreenWidth / mSandSize;
+
+	static const Color sandColors[] = {
+		{150, 114, 22, 255},
+		{161, 130, 50, 255},
+		{177, 153, 87, 255},
+		{192, 173, 121, 255},
+		{205, 190, 144, 255},
+		{228, 214, 172, 255}};
+
+	mGrid.reserve(mRows * mColumns);
+
+	for (int i = 0; i < mRows; i++)
+	{
+		for (int j = 0; j < mColumns; j++)
+		{
+			Particle particle;
+
+			particle.rect = {
+				static_cast<float>(j * mSandSize),
+				static_cast<float>(i * mSandSize),
+				static_cast<float>(mSandSize),
+				static_cast<float>(mSandSize)};
+
+			int colorIndex = mDistrib(mRng) - 1;
+			particle.color = sandColors[colorIndex];
+
+			particle.isShowing = false;
+
+			mGrid.push_back(particle);
+		}
+	}
+
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -130,8 +128,6 @@ bool SandSimulator::InitSandGrid()
 void SandSimulator::SimulationLoop()
 {
 
-	while (!mDone)
-	{
 		// mCurrentFrameTime = SDL_GetTicks();
 
 		// float deltaTime = (mCurrentFrameTime - mPreviousFrameTime) / 1000.0f;
@@ -153,8 +149,7 @@ void SandSimulator::SimulationLoop()
 		ImGui::Checkbox("Filled Sand", &filledSand);
 		ImGui::Checkbox("Points", &points);
 		ImGui::Checkbox("Hollow Squares", &hollowSquares); // Edit bools storing our window open/close state
-		
-		
+
 		static int prevSandSize = mSandSize;
 		ImGui::SliderInt("Sand Size", &mSandSize, 1, 20);
 		if (mSandSize != prevSandSize)
@@ -174,8 +169,9 @@ void SandSimulator::SimulationLoop()
 		// {
 		// 	SDL_Delay(static_cast<Uint32>((1000.0f / 60.0f) - frameDuration));
 		// }
-	}
+	
 }
+
 
 void SandSimulator::HandleInput()
 {
@@ -332,7 +328,6 @@ void SandSimulator::RebuildGrid()
 	mColumns = mScreenWidth / mSandSize;
 
 	mGrid.clear();
-	mGrid.reserve(static_cast<size_t>(mRows * mColumns));
 
 	static const Color sandColors[] = {
 		{150, 114, 22, 255},
