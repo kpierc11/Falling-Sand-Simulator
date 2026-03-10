@@ -128,50 +128,48 @@ bool SandSimulator::InitSandGrid()
 void SandSimulator::SimulationLoop()
 {
 
-		// mCurrentFrameTime = SDL_GetTicks();
+	// mCurrentFrameTime = SDL_GetTicks();
 
-		// float deltaTime = (mCurrentFrameTime - mPreviousFrameTime) / 1000.0f;
-		// mPreviousFrameTime = mCurrentFrameTime;
+	// float deltaTime = (mCurrentFrameTime - mPreviousFrameTime) / 1000.0f;
+	// mPreviousFrameTime = mCurrentFrameTime;
 
-		// Start the Dear ImGui frame
-		ImGui_ImplSDLRenderer3_NewFrame();
-		ImGui_ImplSDL3_NewFrame();
-		ImGui::NewFrame();
+	// Start the Dear ImGui frame
+	ImGui_ImplSDLRenderer3_NewFrame();
+	ImGui_ImplSDL3_NewFrame();
+	ImGui::NewFrame();
 
-		HandleInput();
-		UpdateParticles();
+	HandleInput();
+	UpdateParticles();
 
-		static int counter = 0;
+	static int counter = 0;
 
-		ImGui::Begin("Sand Simulator Settings"); // Create a window called "Hello, world!" and append into it.
+	ImGui::Begin("Sand Simulator Settings"); // Create a window called "Hello, world!" and append into it.
 
-		ImGui::Text("Can change the color and particle style"); // Display some text (you can use a format strings too)
-		ImGui::Checkbox("Filled Sand", &filledSand);
-		ImGui::Checkbox("Points", &points);
-		ImGui::Checkbox("Hollow Squares", &hollowSquares); // Edit bools storing our window open/close state
+	ImGui::Text("Can change the color and particle style"); // Display some text (you can use a format strings too)
+	ImGui::Checkbox("Filled Sand", &filledSand);
+	ImGui::Checkbox("Points", &points);
+	ImGui::Checkbox("Hollow Squares", &hollowSquares); // Edit bools storing our window open/close state
 
-		static int prevSandSize = mSandSize;
-		ImGui::SliderInt("Sand Size", &mSandSize, 1, 20);
-		if (mSandSize != prevSandSize)
-		{
-			RebuildGrid();
-			prevSandSize = mSandSize;
-		} // Edit 1 float using a slider from 0.0f to 1.0f
-		ImGui::ColorEdit3("clear color", (float *)&clear_color); // Edit 3 floats representing a color
+	static int prevSandSize = mSandSize;
+	ImGui::SliderInt("Sand Size", &mSandSize, 1, 20);
+	if (mSandSize != prevSandSize)
+	{
+		RebuildGrid();
+		prevSandSize = mSandSize;
+	} // Edit 1 float using a slider from 0.0f to 1.0f
+	ImGui::ColorEdit3("clear color", (float *)&clear_color); // Edit 3 floats representing a color
 
-		ImGui::End();
+	ImGui::End();
 
-		Render();
+	Render();
 
-		// Uint64 frameEndTime = SDL_GetTicks();
-		// float frameDuration = static_cast<float>(frameEndTime - mCurrentFrameTime);
-		// if (frameDuration < 1000.0f / 60.0f)
-		// {
-		// 	SDL_Delay(static_cast<Uint32>((1000.0f / 60.0f) - frameDuration));
-		// }
-	
+	// Uint64 frameEndTime = SDL_GetTicks();
+	// float frameDuration = static_cast<float>(frameEndTime - mCurrentFrameTime);
+	// if (frameDuration < 1000.0f / 60.0f)
+	// {
+	// 	SDL_Delay(static_cast<Uint32>((1000.0f / 60.0f) - frameDuration));
+	// }
 }
-
 
 void SandSimulator::HandleInput()
 {
@@ -246,10 +244,16 @@ void SandSimulator::HandleInput()
 		{
 			int index = gridY * mColumns + gridX;
 			Particle &sandParticle = mGrid[index];
+			Particle &sandParticleRight = mGrid[index + 1];
+			Particle &sandParticleLeft = mGrid[index - 1];
 
 			if (!sandParticle.isShowing)
 			{
 				sandParticle.isShowing = true;
+			}
+			if (!sandParticleRight.isShowing)
+			{
+				sandParticleRight.isShowing = true;
 			}
 		}
 	}
@@ -257,8 +261,20 @@ void SandSimulator::HandleInput()
 
 void SandSimulator::UpdateParticles()
 {
+	int columnCounter = 0;
 	for (int i = mColumns * mRows - 1; i > 0; i--)
 	{
+
+		// columnCounter++;
+
+		// if(columnCounter == mColumns)
+		// {
+		// 	i -= mColumns;
+
+		// 	columnCounter = 0;
+		// }
+
+
 		if (mGrid[i].isShowing && i + mColumns < mColumns * mRows - 1)
 		{
 			if (mGrid[i + mColumns].isShowing == 0)

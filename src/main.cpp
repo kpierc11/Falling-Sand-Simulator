@@ -1,4 +1,4 @@
-#include <emscripten.h>
+// #include <emscripten.h>
 #include "SandSimulator.hpp"
 
 SandSimulator sandSimulation;
@@ -27,7 +27,11 @@ int main()
 #ifdef __EMSCRIPTEN__
 		emscripten_set_main_loop(mainloop, 0, 1);
 #else
-		mainloop();
+		while (!sandSimulation.isSimulationOver())
+		{
+			mainloop();
+		}
+
 #endif
 	}
 }
