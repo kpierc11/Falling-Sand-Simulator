@@ -1,4 +1,4 @@
-// #include <emscripten.h>
+#include <emscripten.h>
 #include "SandSimulator.hpp"
 
 SandSimulator sandSimulation;

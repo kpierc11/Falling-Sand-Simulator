@@ -95,6 +95,8 @@ bool SandSimulator::InitSandGrid()
 			int colorIndex = mDistrib(mRng) - 1;
 			particle.color = sandColors[colorIndex];
 
+			particle.color = sandColors[colorIndex];
+
 			particle.isShowing = false;
 
 			mGrid.push_back(particle);
@@ -162,13 +164,6 @@ void SandSimulator::SimulationLoop()
 	ImGui::End();
 
 	Render();
-
-	// Uint64 frameEndTime = SDL_GetTicks();
-	// float frameDuration = static_cast<float>(frameEndTime - mCurrentFrameTime);
-	// if (frameDuration < 1000.0f / 60.0f)
-	// {
-	// 	SDL_Delay(static_cast<Uint32>((1000.0f / 60.0f) - frameDuration));
-	// }
 }
 
 void SandSimulator::HandleInput()
@@ -228,32 +223,15 @@ void SandSimulator::HandleInput()
 		const int gridX = static_cast<int>(mouseX / GetSandSize());
 		const int gridY = static_cast<int>(mouseY / GetSandSize());
 
-		mMouseArea.h = static_cast<float>(mMouseAreaSize);
-		mMouseArea.w = static_cast<float>(mMouseAreaSize);
-		mMouseArea.x = mouseX - (mMouseArea.h / 2);
-		mMouseArea.y = mouseY - (mMouseArea.w / 2);
-
-		// int mouseAreaGridX = static_cast<int>(mMouseArea.x / GetSandSize());
-		// int mouseAreaGridY = static_cast<int>(mMouseArea.y / GetSandSize());
-
-		// SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
-		// SDL_RenderRect(mRenderer, &mMouseArea);
-
 		if (gridX >= 0 && gridX < mColumns &&
 			gridY >= 0 && gridY < mRows)
 		{
 			int index = gridY * mColumns + gridX;
 			Particle &sandParticle = mGrid[index];
-			Particle &sandParticleRight = mGrid[index + 1];
-			Particle &sandParticleLeft = mGrid[index - 1];
 
 			if (!sandParticle.isShowing)
 			{
 				sandParticle.isShowing = true;
-			}
-			if (!sandParticleRight.isShowing)
-			{
-				sandParticleRight.isShowing = true;
 			}
 		}
 	}
@@ -261,20 +239,8 @@ void SandSimulator::HandleInput()
 
 void SandSimulator::UpdateParticles()
 {
-	int columnCounter = 0;
 	for (int i = mColumns * mRows - 1; i > 0; i--)
 	{
-
-		// columnCounter++;
-
-		// if(columnCounter == mColumns)
-		// {
-		// 	i -= mColumns;
-
-		// 	columnCounter = 0;
-		// }
-
-
 		if (mGrid[i].isShowing && i + mColumns < mColumns * mRows - 1)
 		{
 			if (mGrid[i + mColumns].isShowing == 0)
@@ -296,8 +262,6 @@ void SandSimulator::Render()
 
 	// Clear back buffer
 	SDL_RenderClear(mRenderer);
-
-	mRandomNum = mDistrib(mRng);
 
 	mRows = mScreenHeight / mSandSize;
 	mColumns = mScreenWidth / mSandSize;
@@ -396,14 +360,14 @@ void SandSimulator::ShiftParticleDown(int index)
 void SandSimulator::ShiftParticleLeftOrRight(int index)
 {
 	// shift left
-	if (mRandomNum == 1 && mGrid[(index + mColumns) - 1].isShowing == 0)
+	if (mDistrib(mRng) == 1 && mGrid[(index + mColumns) - 1].isShowing == 0)
 	{
 		mGrid[index].isShowing = 0;
 		mGrid[index + mColumns - 1].isShowing = 1;
 	}
 
 	// shift right
-	if (mRandomNum == 2 && mGrid[(index + mColumns) + 1].isShowing == 0)
+	if (mDistrib(mRng) == 2 && mGrid[(index + mColumns) + 1].isShowing == 0)
 	{
 		mGrid[index].isShowing = 0;
 		mGrid[index + mColumns + 1].isShowing = 1;

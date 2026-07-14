@@ -31,9 +31,9 @@
 /* #undef SDL_VENDOR_INFO */
 
 #ifdef SDL_VENDOR_INFO
-#define SDL_REVISION "SDL3-3.2.18-release-3.2.18 (" SDL_VENDOR_INFO ")"
+#define SDL_REVISION "SDL3-3.2.18--128-NOTFOUND (" SDL_VENDOR_INFO ")"
 #else
-#define SDL_REVISION "SDL3-3.2.18-release-3.2.18"
+#define SDL_REVISION "SDL3-3.2.18--128-NOTFOUND"
 #endif
 
 #endif /* SDL_revision_h_ */
