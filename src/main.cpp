@@ -1,5 +1,8 @@
+#ifdef __EMSCRIPTEN__
 #include <emscripten.h>
-#include "SandSimulator.hpp"
+#endif
+#include <stdlib.h>
+import SandSimulator;
 
 SandSimulator sandSimulation;
 

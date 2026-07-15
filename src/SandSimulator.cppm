@@ -1,7 +1,17 @@
-#include "SandSimulator.hpp"
+
+module;
+#include <iostream>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_audio.h>
+#include <chrono>
+#include <random>
+#include "imgui.h"
 #include "backends/imgui_impl_sdl3.h"
 #include "backends/imgui_impl_sdlrenderer3.h"
 #include "cmath"
+
+export module SandSimulator;
+
 
 bool show_demo_window = true;
 bool show_another_window = true;
@@ -9,6 +19,94 @@ bool points = false;
 bool filledSand = true;
 bool hollowSquares = false;
 ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+struct Color
+{
+	Uint8 r;
+	Uint8 g;
+	Uint8 b;
+	Uint8 a;
+};
+
+struct Particle
+{
+	SDL_FRect rect{};
+	Color color;
+	bool isShowing{false};
+	void ShiftParticleDown(int index);
+	void ShiftParticleLeftOrRight(int index);
+};
+
+export class SandSimulator
+{
+
+public:
+	SandSimulator();
+
+	~SandSimulator();
+
+	bool InitSandGrid();
+	void SimulationLoop();
+	void EndSimulation();
+
+	SDL_Renderer *GetRenderer()
+	{
+		return mRenderer;
+	}
+	SDL_Window *GetWindow()
+	{
+		return mWindow;
+	}
+	int GetColumns() const
+	{
+		return mColumns;
+	}
+	int GetRows() const
+	{
+		return mRows;
+	}
+
+	int GetSandSize() const
+	{
+		return mSandSize;
+	}
+
+	bool isSimulationOver() const { return mDone; }
+
+private:
+	void HandleInput();
+	void UpdateParticles();
+	void Render();
+	void RebuildGrid();
+	void ShiftParticleDown(int index);
+	void ShiftParticleLeftOrRight(int index);
+
+private:
+	Uint64 mCurrentFrameTime;
+
+	int mScreenWidth;
+	int mScreenHeight;
+	int mRows;
+	int mColumns;
+	int mMouseAreaSize;
+	int mRandomNum;
+	int mSandSize;
+
+	bool mMouseDown;
+	bool mDone = false;
+
+	SDL_Window *mWindow;
+	SDL_Renderer *mRenderer;
+	SDL_FRect mMouseArea;
+
+	std::vector<Particle> mGrid;
+	std::vector<Particle> mParticles;
+	std::mt19937 mRng;
+	std::uniform_int_distribution<> mDistrib;
+
+	ImGuiIO mIO;
+};
+
 
 SandSimulator::SandSimulator() : mCurrentFrameTime(SDL_GetTicks()),
 								 mScreenWidth(1000),
@@ -48,7 +146,7 @@ bool SandSimulator::InitSandGrid()
 		"Sand Simulator",
 		mScreenWidth,
 		mScreenHeight,
-		SDL_WINDOW_OPENGL);
+		SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
 	// Check that the window was successfully created
 	if (mWindow == NULL)
@@ -145,12 +243,12 @@ void SandSimulator::SimulationLoop()
 
 	static int counter = 0;
 
-	ImGui::Begin("Sand Simulator Settings"); // Create a window called "Hello, world!" and append into it.
+	ImGui::Begin("Sand Simulator Settings");
 
-	ImGui::Text("Can change the color and particle style"); // Display some text (you can use a format strings too)
+	ImGui::Text("Can change the color and particle style"); 
 	ImGui::Checkbox("Filled Sand", &filledSand);
 	ImGui::Checkbox("Points", &points);
-	ImGui::Checkbox("Hollow Squares", &hollowSquares); // Edit bools storing our window open/close state
+	ImGui::Checkbox("Hollow Squares", &hollowSquares);
 
 	static int prevSandSize = mSandSize;
 	ImGui::SliderInt("Sand Size", &mSandSize, 1, 20);
@@ -159,7 +257,7 @@ void SandSimulator::SimulationLoop()
 		RebuildGrid();
 		prevSandSize = mSandSize;
 	} // Edit 1 float using a slider from 0.0f to 1.0f
-	ImGui::ColorEdit3("clear color", (float *)&clear_color); // Edit 3 floats representing a color
+	ImGui::ColorEdit3("clear color", (float *)&clear_color); 
 
 	ImGui::End();
 
@@ -210,6 +308,15 @@ void SandSimulator::HandleInput()
 
 				mMouseAreaSize += 20;
 			}
+		}
+
+		if (event.type == SDL_EVENT_WINDOW_RESIZED)
+		{
+
+			int newWidth = event.window.data1;
+			int newHeight = event.window.data2;
+
+			
 		}
 	}
 
