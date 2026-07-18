@@ -16,9 +16,11 @@ import Particle;
 
 bool show_demo_window = true;
 bool show_another_window = true;
-bool water = false;
-bool filledSand = true;
-bool hollowSquares = false;
+static bool sand = true;
+static bool water = false;
+static bool bubbles = false;
+
+static int selectedOption = 0;
 ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 export class SandSimulator
@@ -125,7 +127,7 @@ bool SandSimulator::InitSandGrid()
 		"Sand Simulator",
 		mScreenWidth,
 		mScreenHeight,
-		SDL_WINDOW_OPENGL);
+		SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
 	// Check that the window was successfully created
 	if (mWindow == NULL)
@@ -198,17 +200,40 @@ void SandSimulator::SimulationLoop()
 	ImGui_ImplSDL3_NewFrame();
 	ImGui::NewFrame();
 
-	HandleInput();
-	UpdateParticles();
-
-	static int counter = 0;
-
 	ImGui::Begin("Sand Simulator Settings");
 
-	ImGui::Text("Can change the color and particle style");
-	ImGui::Checkbox("Sand", &filledSand);
-	ImGui::Checkbox("Water", &water);
-	ImGui::Checkbox("Hollow Squares", &hollowSquares);
+	// ImGui::Text("Can change the color and particle style");
+	//  ImGui::Checkbox("Sand", &filledSand);
+	//  if (filledSand)
+	//  	water = false;
+
+	// ImGui::Checkbox("Water", &water);
+	// if (water)
+	// 	filledSand = false;
+
+	// 	ImGui::Checkbox("Water", &water);
+	// if (water)
+	// 	filledSand = false;
+
+	// 2. Render the radio buttons inside your ImGui frame
+	if (ImGui::RadioButton("Sand", &selectedOption, 0))
+	{
+		sand = true;
+		water = false;
+		bubbles = false;
+	}
+	if (ImGui::RadioButton("Water", &selectedOption, 1))
+	{
+		sand = false;
+		water = true;
+		bubbles = false;
+	}
+	if (ImGui::RadioButton("Bubbles", &selectedOption, 2))
+	{
+		sand = false;
+		water = false;
+		bubbles = true;
+	}
 
 	static int prevSandSize = mSandSize;
 	ImGui::SliderInt("Sand Size", &mSandSize, 1, 20);
@@ -217,10 +242,12 @@ void SandSimulator::SimulationLoop()
 		RebuildGrid();
 		prevSandSize = mSandSize;
 	} // Edit 1 float using a slider from 0.0f to 1.0f
-	ImGui::ColorEdit3("clear color", (float *)&clear_color);
+	// ImGui::ColorEdit3("clear color", (float *)&clear_color);
 
 	ImGui::End();
 
+	HandleInput();
+	UpdateParticles();
 	Render();
 }
 
@@ -272,9 +299,10 @@ void SandSimulator::HandleInput()
 
 		if (event.type == SDL_EVENT_WINDOW_RESIZED)
 		{
+			mScreenWidth = event.window.data1;
+			mScreenHeight = event.window.data2;
 
-			int newWidth = event.window.data1;
-			int newHeight = event.window.data2;
+			RebuildGrid();
 		}
 	}
 
@@ -288,25 +316,35 @@ void SandSimulator::HandleInput()
 		const int gridX = static_cast<int>(mouseX / GetSandSize());
 		const int gridY = static_cast<int>(mouseY / GetSandSize());
 
-		if (gridX >= 0 && gridX < mColumns &&
+		if (gridX >= 0 && gridX < mColumns - 1 &&
 			gridY >= 0 && gridY < mRows)
 		{
 			int index = gridY * mColumns + gridX;
-			Particle &sandParticle = mGrid[index];
 
-			if (!sandParticle.mIsShowing && filledSand)
-			{
-				sandParticle.mType = Type::Sand;
-				sandParticle.mIsShowing = true;
-				sandParticle.mColor = sandColors[mDistrib(mRng)];
-			}
+			// for (int i = index; i < index + 5; i++)
+			// {
+				Particle &sandParticle = mGrid[index];
+				if (!sandParticle.mIsShowing && sand)
+				{
+					sandParticle.mType = Type::Sand;
+					sandParticle.mIsShowing = true;
+					sandParticle.mColor = sandColors[mDistrib(mRng)];
+				}
 
-			if (!sandParticle.mIsShowing && water)
-			{
-				sandParticle.mType = Type::Water;
-				sandParticle.mIsShowing = true;
-				sandParticle.mColor = waterColors[0];
-			}
+				if (!sandParticle.mIsShowing && water)
+				{
+					sandParticle.mType = Type::Water;
+					sandParticle.mIsShowing = true;
+					sandParticle.mColor = waterColors[0];
+				}
+
+				if (!sandParticle.mIsShowing && bubbles)
+				{
+					sandParticle.mType = Type::Bubbles;
+					sandParticle.mIsShowing = true;
+					sandParticle.mColor = bubbleColors[0];
+				}
+			//}
 		}
 	}
 }
@@ -354,10 +392,11 @@ void SandSimulator::RebuildGrid()
 	mColumns = mScreenWidth / mSandSize;
 
 	mGrid.clear();
+	mGrid.reserve(mRows * mColumns);
 
-	for (int i = 0; i < mRows; i++)
+	for (int i = 0; i < mRows; ++i)
 	{
-		for (int j = 0; j < mColumns; j++)
+		for (int j = 0; j < mColumns; ++j)
 		{
 			Particle particle;
 
